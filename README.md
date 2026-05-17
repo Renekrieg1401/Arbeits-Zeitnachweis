@@ -108,20 +108,37 @@
             print-color-adjust: exact; -webkit-print-color-adjust: exact;
         }
         
-        .controls-bottom { margin-top: 40px; display: flex; gap: 12px; justify-content: flex-start; align-items: center; flex-wrap: wrap; }
+        /* KONTROLL-BAR: Flexbox mit automatischem Zeilenumbruch falls nötig */
+        .controls-bottom { 
+            margin-top: 40px;
+            display: flex; 
+            gap: 15px; 
+            justify-content: flex-start; 
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        
+        /* Allgemeine Formatierung für ALLE Buttons */
         .btn-action {
             color: white;
-            border: none; padding: 12px 20px; border-radius: 4px;
-            cursor: pointer; font-weight: bold; font-size: 14px; font-family: Arial, sans-serif;
+            border: none; 
+            padding: 12px 24px; 
+            border-radius: 4px;
+            cursor: pointer; 
+            font-weight: bold; 
+            font-size: 14px; 
+            font-family: Arial, sans-serif;
             box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-            transition: background-color 0.2s;
+            display: inline-block;
         }
-        .btn-pdf { background-color: #004b7c; }
-        .btn-pdf:hover { background-color: #003353; }
         
-        /* STYLES FÜR DIE NEUEN MANUELLEN BUTTONS */
+        /* Einzigartige Farben für jeden Button */
+        .btn-save { background-color: #004b7c; } /* Blau */
+        .btn-save:hover { background-color: #003353; }
+        
         .btn-manual-save { background-color: #2e7d32; } /* Grün */
         .btn-manual-save:hover { background-color: #1b5e20; }
+        
         .btn-manual-load { background-color: #ef6c00; } /* Orange */
         .btn-manual-load:hover { background-color: #e65100; }
 
@@ -222,9 +239,9 @@
     </div>
 
     <div class="controls-bottom">
-        <button class="btn-action btn-manual-save" onclick="triggerManualSave()">Manuell Speichern</button>
-        <button class="btn-action btn-manual-load" onclick="triggerManualLoad()">Daten wiederherstellen</button>
-        <button class="btn-action btn-pdf" onclick="saveAsPDFNativeDownload()">💾 PDF generieren und herunterladen</button>
+        <button type="button" class="btn-action btn-manual-save" onclick="triggerManualSave()">💾 Manuell Speichern</button>
+        <button type="button" class="btn-action btn-manual-load" onclick="triggerManualLoad()">🔄 Daten wiederherstellen</button>
+        <button type="button" class="btn-action btn-save" onclick="saveAsPDFNativeDownload()">📄 PDF herunterladen</button>
     </div>
 
     <div class="footer-info" style="margin-top: 110px;">
@@ -331,20 +348,20 @@
         return cv.toDataURL() === blank.toDataURL();
     }
 
-    // MANUELLE TRIGER-FUNKTIONEN
+    // INTERAKTIVE STEUERUNGSFUNKTIONEN
     function triggerManualSave() {
         saveAllToStorage();
-        alert("💾 Daten erfolgreich für diesen Monat im Speicher gesichert!");
+        alert("💾 Tabellendaten wurden erfolgreich im LocalStorage gesichert!");
     }
 
+    type="text"
     function triggerManualLoad() {
         loadStoredRowData();
         calculateTotalHours();
-        alert("🔄 Gespeicherte Daten erfolgreich wiederhergestellt.");
+        alert("🔄 Gespeicherte Daten wurden geladen und wiederhergestellt.");
     }
 
     function saveAsPDFNativeDownload() {
-        // Zur Sicherheit vor PDF Erstellung sichern
         saveAllToStorage();
 
         const name = document.getElementById('nameInput').value.trim();
@@ -478,7 +495,6 @@
             loadStoredRowData();
         } else { 
             document.getElementById('kwInput').value = `KW ${startKW}-${endKW} / ${year}`;
-            // Optional: Wenn du beim Monatswechsel automatisch mitspeichern willst, lass das hier aktiv.
             saveAllToStorage(); 
         }
         calculateTotalHours();
