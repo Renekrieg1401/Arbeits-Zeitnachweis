@@ -4,11 +4,8 @@
     <meta charset="UTF-8">
     <title>Arbeitszeitnachweis - Diakoniestation Gladenbach</title>
     
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><circle cx='256' cy='256' r='240' fill='%23004b7c'/><circle cx='256' cy='256' r='200' fill='none' stroke='%23ffffff' stroke-width='16' stroke-dasharray='12 12' opacity='0.4'/><g fill='%23ffffff'><path d='M236 110h40v292h-40z'/><path d='M130 210h252v40H130z'/><path d='M130 210c0-40 40-40 40-40s40 0 40 40' fill='none' stroke='%23ffffff' stroke-width='40' stroke-linecap='square'/><path d='M302 210c0-40 40-40 40-40s40 0 40 40' fill='none' stroke='%23ffffff' stroke-width='40' stroke-linecap='square'/></g><path d='M256 256 l70 40' stroke='%23ffffff' stroke-width='12' stroke-linecap='round'/></svg>">
-    <meta name="theme-color" content="#004b7c">
-
-    <script async src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <script async src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
     <style>
         :root {
@@ -17,59 +14,37 @@
             --weekend-color: #f0f0f0; 
         }
         
-        /* FIXIERTE STEUERUNGSLEISTE GANZ OBEN AM BILDSCHIRM */
-        .global-header-nav {
-            position: fixed !important;
-            top: 0 !important;
-            left: 0 !important;
-            width: 100% !important;
-            height: 70px !important;
-            background-color: #1e1e1e !important; /* Dunkelgrau für maximalen Kontrast */
-            border-bottom: 3px solid var(--accent-color) !important;
-            display: flex !important;
-            justify-content: center !important;
-            align-items: center !important;
-            gap: 20px !important;
-            z-index: 99999 !important; /* Garantiert über allen anderen Elementen */
-            box-shadow: 0 4px 10px rgba(0,0,0,0.4) !important;
-            box-sizing: border-box !important;
-            padding: 0 20px !important;
+        /* Ein ganz simpler, altmodischer Kasten für die Buttons */
+        .einfache-button-leiste {
+            background: #e0e0e0;
+            border: 3px solid #004b7c;
+            padding: 15px;
+            margin-bottom: 20px;
+            text-align: center;
+            width: 100%;
+            max-width: 210mm;
+            box-sizing: border-box;
         }
         
-        /* Buttons extrem auffällig stylen */
-        .btn-action {
-            color: #ffffff !important;
-            border: none !important; 
-            padding: 10px 20px !important; 
-            border-radius: 4px !important;
-            cursor: pointer !important; 
-            font-weight: bold !important; 
-            font-size: 14px !important; 
-            font-family: Arial, sans-serif !important;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.3) !important;
-            display: inline-block !important;
-            text-transform: uppercase !important;
-            letter-spacing: 0.5px !important;
+        /* Standard-Button-Design ohne Schnörkel */
+        .standard-knop {
+            font-size: 16px;
+            font-family: Arial, sans-serif;
+            font-weight: bold;
+            padding: 12px 20px;
+            margin: 5px;
+            cursor: pointer;
+            color: white;
+            border: 1px solid #333;
+            border-radius: 4px;
         }
-        
-        .btn-manual-save { background-color: #2e7d32 !important; } /* Grün */
-        .btn-manual-save:hover { background-color: #1b5e20 !important; }
-        
-        .btn-manual-load { background-color: #ef6c00 !important; } /* Orange */
-        .btn-manual-load:hover { background-color: #e65100 !important; }
-
-        .btn-save { background-color: #004b7c !important; } /* Blau */
-        .btn-save:hover { background-color: #003353 !important; }
 
         body {
             font-family: Arial, sans-serif;
-            margin: 0;
-            padding-top: 90px; /* Platzhalter für die fixierte Leiste oben */
+            margin: 20px;
             color: #333;
             background-color: #525659; 
-            display: flex;
-            flex-direction: column;
-            align-items: center;
+            text-align: center;
         }
         .page {
             width: 210mm;
@@ -78,15 +53,14 @@
             box-sizing: border-box;
             background: white;
             box-shadow: 0 0 10px rgba(0,0,0,0.3);
-            position: relative;
+            margin: 0 auto;
+            text-align: left;
         }
         .header {
             background-color: var(--header-bg-color) !important;
             padding: 15px;
             border: 1px solid #ccc;
             margin-bottom: 20px;
-            print-color-adjust: exact;
-            -webkit-print-color-adjust: exact;
         }
         h1 { font-size: 20px; margin: 0 0 5px 0; text-transform: uppercase; letter-spacing: 1px; }
         h2 { font-size: 16px; margin: 0 0 15px 0; color: var(--accent-color); }
@@ -114,7 +88,6 @@
             font-size: 10px;
             text-align: left; font-weight: normal;
             background-color: var(--header-bg-color) !important;
-            print-color-adjust: exact; -webkit-print-color-adjust: exact;
         }
         input.cell-input {
             width: 100%;
@@ -147,35 +120,29 @@
         }
         
         .holiday-row td { text-decoration: underline !important; font-weight: bold; }
-        .weekend-row {
-            background-color: var(--weekend-color) !important;
-            print-color-adjust: exact; -webkit-print-color-adjust: exact;
-        }
-        .total-row {
-            background-color: #eaeff5 !important;
-            font-weight: bold; font-size: 13px;
-            print-color-adjust: exact; -webkit-print-color-adjust: exact;
-        }
+        .weekend-row { background-color: var(--weekend-color) !important; }
+        .total-row { background-color: #eaeff5 !important; font-weight: bold; font-size: 13px; }
 
         @media print {
-            body { padding-top: 0; margin: 0; background-color: white; }
-            .page { width: 100%; min-height: auto; padding: 0; box-shadow: none; }
+            body { margin: 0; background-color: white; }
+            .page { width: 100%; min-height: auto; padding: 0; box-shadow: none; margin: 0; }
             .page-break { border-top: none; }
             input[type="text"], input[type="month"], input[type="date"], input.cell-input { border: none !important; }
-            .btn-clear-sig, .global-header-nav { display: none !important; }
+            .btn-clear-sig, .einfache-button-leiste { display: none !important; }
             .canvas-wrapper { border-bottom: none !important; background: transparent; }
         }
     </style>
 </head>
 <body>
 
-<div class="global-header-nav">
-    <button type="button" class="btn-action btn-manual-save" onclick="triggerManualSave()">💾 Speichern</button>
-    <button type="button" class="btn-action btn-manual-load" onclick="triggerManualLoad()">🔄 Laden</button>
-    <button type="button" class="btn-action btn-save" onclick="saveAsPDFNativeDownload()">📄 PDF herunterladen</button>
-</div>
-
 <div class="page" id="pdfArea">
+
+    <div class="einfache-button-leiste">
+        <button type="button" class="standard-knop" style="background-color: #2e7d32;" onclick="triggerManualSave()">💾 Speichern</button>
+        <button type="button" class="standard-knop" style="background-color: #ef6c00;" onclick="triggerManualLoad()">🔄 Laden</button>
+        <button type="button" class="standard-knop" style="background-color: #004b7c;" onclick="saveAsPDFNativeDownload()">📄 PDF herunterladen</button>
+    </div>
+
     <div class="header" id="mainHeader1">
         <h1>Arbeitszeitnachweis</h1>
         <h2>Diakoniestation Gladenbach</h2>
@@ -385,12 +352,11 @@
 
         const targetFilename = `Arbeitszeitnachweis_${name}_${monatJahr}.pdf`;
         
-        const navLeiste = document.querySelector('.global-header-nav');
+        const navLeiste = document.querySelector('.einfache-button-leiste');
         if(navLeiste) navLeiste.style.setProperty('display', 'none', 'important');
         
         const element = document.getElementById('pdfArea');
 
-        // Prüfen, ob Bibliotheken bereitstehen, ansonsten Fallback auf Browser-Drucker
         if (window.html2canvas && window.jspdf) {
             html2canvas(element, { scale: 2, useCORS: true }).then(canvasObj => {
                 const imgData = canvasObj.toDataURL('image/jpeg', 0.98);
@@ -411,13 +377,13 @@
                     heightLeft -= pageHeight;
                 }
                 pdf.save(targetFilename);
-                if(navLeiste) navLeiste.style.setProperty('display', 'flex', 'important');
+                if(navLeiste) navLeiste.style.setProperty('display', 'block', 'important');
             }).catch(() => { 
-                if(navLeiste) navLeiste.style.setProperty('display', 'flex', 'important');
+                if(navLeiste) navLeiste.style.setProperty('display', 'block', 'important');
                 window.print(); 
             });
         } else { 
-            if(navLeiste) navLeiste.style.setProperty('display', 'flex', 'important');
+            if(navLeiste) navLeiste.style.setProperty('display', 'block', 'important');
             window.print(); 
         }
     }
