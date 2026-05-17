@@ -5,13 +5,10 @@
     <title>Arbeitszeitnachweis - Diakoniestation Gladenbach</title>
     
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><circle cx='256' cy='256' r='240' fill='%23004b7c'/><circle cx='256' cy='256' r='200' fill='none' stroke='%23ffffff' stroke-width='16' stroke-dasharray='12 12' opacity='0.4'/><g fill='%23ffffff'><path d='M236 110h40v292h-40z'/><path d='M130 210h252v40H130z'/><path d='M130 210c0-40 40-40 40-40s40 0 40 40' fill='none' stroke='%23ffffff' stroke-width='40' stroke-linecap='square'/><path d='M302 210c0-40 40-40 40-40s40 0 40 40' fill='none' stroke='%23ffffff' stroke-width='40' stroke-linecap='square'/></g><path d='M256 256 l70 40' stroke='%23ffffff' stroke-width='12' stroke-linecap='round'/></svg>">
-
-    <link rel="apple-touch-icon" sizes="180x180" href="icon.png">
-
     <meta name="theme-color" content="#004b7c">
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script async src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script async src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
     <style>
         :root {
@@ -19,11 +16,57 @@
             --accent-color: #004b7c;
             --weekend-color: #f0f0f0; 
         }
+        
+        /* FIXIERTE STEUERUNGSLEISTE GANZ OBEN AM BILDSCHIRM */
+        .global-header-nav {
+            position: fixed !important;
+            top: 0 !important;
+            left: 0 !important;
+            width: 100% !important;
+            height: 70px !important;
+            background-color: #1e1e1e !important; /* Dunkelgrau für maximalen Kontrast */
+            border-bottom: 3px solid var(--accent-color) !important;
+            display: flex !important;
+            justify-content: center !important;
+            align-items: center !important;
+            gap: 20px !important;
+            z-index: 99999 !important; /* Garantiert über allen anderen Elementen */
+            box-shadow: 0 4px 10px rgba(0,0,0,0.4) !important;
+            box-sizing: border-box !important;
+            padding: 0 20px !important;
+        }
+        
+        /* Buttons extrem auffällig stylen */
+        .btn-action {
+            color: #ffffff !important;
+            border: none !important; 
+            padding: 10px 20px !important; 
+            border-radius: 4px !important;
+            cursor: pointer !important; 
+            font-weight: bold !important; 
+            font-size: 14px !important; 
+            font-family: Arial, sans-serif !important;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3) !important;
+            display: inline-block !important;
+            text-transform: uppercase !important;
+            letter-spacing: 0.5px !important;
+        }
+        
+        .btn-manual-save { background-color: #2e7d32 !important; } /* Grün */
+        .btn-manual-save:hover { background-color: #1b5e20 !important; }
+        
+        .btn-manual-load { background-color: #ef6c00 !important; } /* Orange */
+        .btn-manual-load:hover { background-color: #e65100 !important; }
+
+        .btn-save { background-color: #004b7c !important; } /* Blau */
+        .btn-save:hover { background-color: #003353 !important; }
+
         body {
             font-family: Arial, sans-serif;
-            margin: 20px;
+            margin: 0;
+            padding-top: 90px; /* Platzhalter für die fixierte Leiste oben */
             color: #333;
-            background-color: #525659; /* Neutraler Hintergrund wie im PDF-Viewer */
+            background-color: #525659; 
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -37,63 +80,6 @@
             box-shadow: 0 0 10px rgba(0,0,0,0.3);
             position: relative;
         }
-        
-        /* STEUERUNGSBUTTONS OBEN */
-        .controls-top {
-            margin-bottom: 20px;
-            padding: 15px;
-            background-color: #f1f1f1;
-            border: 2px solid #004b7c;
-            border-radius: 8px;
-            display: flex !important;
-            gap: 15px;
-            justify-content: center;
-            align-items: center;
-            width: 100%;
-            box-sizing: border-box;
-        }
-
-        /* STEUERUNGSBUTTONS UNTEN */
-        .controls-bottom { 
-            margin-top: 50px;
-            padding: 15px;
-            background-color: #f1f1f1;
-            border: 1px solid #ccc;
-            border-radius: 8px;
-            display: flex !important; 
-            justify-content: center; 
-            align-items: center;
-            width: 100%;
-            box-sizing: border-box;
-        }
-        
-        /* Button-Styles */
-        .btn-action {
-            color: white !important;
-            border: none; 
-            padding: 12px 24px; 
-            border-radius: 5px;
-            cursor: pointer; 
-            font-weight: bold; 
-            font-size: 14px; 
-            font-family: Arial, sans-serif;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
-            display: inline-block !important;
-            transition: transform 0.1s, background-color 0.2s;
-        }
-        .btn-action:active {
-            transform: scale(0.98);
-        }
-        
-        .btn-manual-save { background-color: #2e7d32 !important; } 
-        .btn-manual-save:hover { background-color: #1b5e20 !important; }
-        
-        .btn-manual-load { background-color: #ef6c00 !important; } 
-        .btn-manual-load:hover { background-color: #e65100 !important; }
-
-        .btn-save { background-color: #004b7c !important; } 
-        .btn-save:hover { background-color: #003353 !important; }
-
         .header {
             background-color: var(--header-bg-color) !important;
             padding: 15px;
@@ -172,24 +158,24 @@
         }
 
         @media print {
-            body { margin: 0; background-color: white; }
+            body { padding-top: 0; margin: 0; background-color: white; }
             .page { width: 100%; min-height: auto; padding: 0; box-shadow: none; }
             .page-break { border-top: none; }
             input[type="text"], input[type="month"], input[type="date"], input.cell-input { border: none !important; }
-            .btn-clear-sig, .controls-top, .controls-bottom { display: none !important; }
+            .btn-clear-sig, .global-header-nav { display: none !important; }
             .canvas-wrapper { border-bottom: none !important; background: transparent; }
         }
     </style>
 </head>
 <body>
 
-<div class="page" id="pdfArea">
-    
-    <div class="controls-top">
-        <button type="button" class="btn-action btn-manual-save" onclick="triggerManualSave()">💾 Manuell Speichern</button>
-        <button type="button" class="btn-action btn-manual-load" onclick="triggerManualLoad()">🔄 Daten laden / wiederherstellen</button>
-    </div>
+<div class="global-header-nav">
+    <button type="button" class="btn-action btn-manual-save" onclick="triggerManualSave()">💾 Speichern</button>
+    <button type="button" class="btn-action btn-manual-load" onclick="triggerManualLoad()">🔄 Laden</button>
+    <button type="button" class="btn-action btn-save" onclick="saveAsPDFNativeDownload()">📄 PDF herunterladen</button>
+</div>
 
+<div class="page" id="pdfArea">
     <div class="header" id="mainHeader1">
         <h1>Arbeitszeitnachweis</h1>
         <h2>Diakoniestation Gladenbach</h2>
@@ -273,11 +259,7 @@
         </div>
     </div>
 
-    <div class="controls-bottom">
-        <button type="button" class="btn-action btn-save" onclick="saveAsPDFNativeDownload()">📄 PDF herunterladen</button>
-    </div>
-
-    <div class="footer-info" style="margin-top: 60px;">
+    <div class="footer-info" style="margin-top: 150px;">
         <div>Logo / Diakoniestation Gladenbach QMH Kap. 5.1.1</div>
         <div>F4 Vers.4 Nov.13</div>
         <div>Seite 2 von 2</div>
@@ -383,13 +365,13 @@
 
     function triggerManualSave() {
         saveAllToStorage();
-        alert("💾 Gespeichert! Die Tabellendaten wurden in Ihrem Webbrowser abgelegt.");
+        alert("💾 Daten erfolgreich lokal gesichert!");
     }
 
     function triggerManualLoad() {
         loadStoredRowData();
         calculateTotalHours();
-        alert("🔄 Wiederhergestellt! Die Daten aus dem lokalen Speicher wurden geladen.");
+        alert("🔄 Letzte gespeicherte Daten erfolgreich geladen.");
     }
 
     function saveAsPDFNativeDownload() {
@@ -399,18 +381,16 @@
         
         if (!name) { alert('❌ Bitte tragen Sie Ihren Namen ein.'); return; }
         if (!sigDateField.value) { alert('❌ Bitte wählen Sie ein Datum für die Unterschrift aus.'); return; }
-        if (isCanvasEmpty(canvas)) { alert('❌ Bitte unterschreiben Sie das Dokument auf Seite 2 vor dem Export.'); return; }
+        if (isCanvasEmpty(canvas)) { alert('❌ Bitte unterschreiben Sie das Dokument vor dem Export.'); return; }
 
         const targetFilename = `Arbeitszeitnachweis_${name}_${monatJahr}.pdf`;
         
-        // Verstecke beide Button-Container vor dem Screenshot
-        const topBox = document.querySelector('.controls-top');
-        const bottomBox = document.querySelector('.controls-bottom');
-        if(topBox) topBox.style.visibility = 'hidden';
-        if(bottomBox) bottomBox.style.visibility = 'hidden';
+        const navLeiste = document.querySelector('.global-header-nav');
+        if(navLeiste) navLeiste.style.setProperty('display', 'none', 'important');
         
         const element = document.getElementById('pdfArea');
 
+        // Prüfen, ob Bibliotheken bereitstehen, ansonsten Fallback auf Browser-Drucker
         if (window.html2canvas && window.jspdf) {
             html2canvas(element, { scale: 2, useCORS: true }).then(canvasObj => {
                 const imgData = canvasObj.toDataURL('image/jpeg', 0.98);
@@ -431,16 +411,13 @@
                     heightLeft -= pageHeight;
                 }
                 pdf.save(targetFilename);
-                if(topBox) topBox.style.visibility = 'visible';
-                if(bottomBox) bottomBox.style.visibility = 'visible';
+                if(navLeiste) navLeiste.style.setProperty('display', 'flex', 'important');
             }).catch(() => { 
-                if(topBox) topBox.style.visibility = 'visible';
-                if(bottomBox) bottomBox.style.visibility = 'visible';
+                if(navLeiste) navLeiste.style.setProperty('display', 'flex', 'important');
                 window.print(); 
             });
         } else { 
-            if(topBox) topBox.style.visibility = 'visible';
-            if(bottomBox) bottomBox.style.visibility = 'visible';
+            if(navLeiste) navLeiste.style.setProperty('display', 'flex', 'important');
             window.print(); 
         }
     }
