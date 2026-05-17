@@ -9,10 +9,10 @@
     <link rel="apple-touch-icon" sizes="180x180" href="icon.png">
 
     <meta name="theme-color" content="#004b7c">
-    <meta name="msapplication-TileColor" content="#004b7c">
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
     <style>
         :root {
             --header-bg-color: #f5f5f5;
@@ -23,13 +23,19 @@
             font-family: Arial, sans-serif;
             margin: 20px;
             color: #333;
+            background-color: #525659; /* Neutraler Hintergrund wie im PDF-Viewer */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
         .page {
             width: 210mm;
             min-height: 297mm;
-            padding: 10mm;
+            padding: 15mm 10mm 10mm 10mm;
             box-sizing: border-box;
             background: white;
+            box-shadow: 0 0 10px rgba(0,0,0,0.3);
+            position: relative;
         }
         .header {
             background-color: var(--header-bg-color) !important;
@@ -108,45 +114,52 @@
             print-color-adjust: exact; -webkit-print-color-adjust: exact;
         }
         
-        /* Absolut sichtbarer und fixierter Button-Container unten */
+        /* FEST FIXIERTER UND STETS SICHTBARER BUTTON-CONTAINER IM BROWSER */
         .controls-bottom { 
-            margin-top: 40px;
-            padding: 10px 0;
+            margin-top: 50px;
+            padding: 20px;
+            background-color: #f1f1f1;
+            border: 2px solid #004b7c;
+            border-radius: 8px;
             display: flex !important; 
-            gap: 15px; 
-            justify-content: flex-start; 
+            gap: 20px; 
+            justify-content: center; 
             align-items: center;
             flex-wrap: wrap;
-            min-height: 50px;
+            width: 100%;
+            box-sizing: border-box;
         }
         
-        /* Allgemeine Formatierung für ALLE Buttons */
+        /* Button-Styles */
         .btn-action {
             color: white !important;
             border: none; 
-            padding: 12px 24px; 
-            border-radius: 4px;
+            padding: 14px 28px; 
+            border-radius: 5px;
             cursor: pointer; 
             font-weight: bold; 
-            font-size: 14px; 
+            font-size: 15px; 
             font-family: Arial, sans-serif;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
             display: inline-block !important;
+            transition: transform 0.1s, background-color 0.2s;
+        }
+        .btn-action:active {
+            transform: scale(0.98);
         }
         
-        /* Einzigartige, kräftige Farben für jeden Button */
-        .btn-manual-save { background-color: #2e7d32 !important; } /* Grün */
+        .btn-manual-save { background-color: #2e7d32 !important; } 
         .btn-manual-save:hover { background-color: #1b5e20 !important; }
         
-        .btn-manual-load { background-color: #ef6c00 !important; } /* Orange */
+        .btn-manual-load { background-color: #ef6c00 !important; } 
         .btn-manual-load:hover { background-color: #e65100 !important; }
 
-        .btn-save { background-color: #004b7c !important; } /* Blau */
+        .btn-save { background-color: #004b7c !important; } 
         .btn-save:hover { background-color: #003353 !important; }
 
         @media print {
-            body { margin: 0; }
-            .page { width: 100%; min-height: auto; padding: 0; }
+            body { margin: 0; background-color: white; }
+            .page { width: 100%; min-height: auto; padding: 0; box-shadow: none; }
             .page-break { border-top: none; }
             input[type="text"], input[type="month"], input[type="date"], input.cell-input { border: none !important; }
             .btn-clear-sig, .controls-bottom { display: none !important; }
@@ -242,11 +255,11 @@
 
     <div class="controls-bottom">
         <button type="button" class="btn-action btn-manual-save" onclick="triggerManualSave()">💾 Manuell Speichern</button>
-        <button type="button" class="btn-action btn-manual-load" onclick="triggerManualLoad()">🔄 Daten wiederherstellen</button>
+        <button type="button" class="btn-action btn-manual-load" onclick="triggerManualLoad()">🔄 Daten laden / wiederherstellen</button>
         <button type="button" class="btn-action btn-save" onclick="saveAsPDFNativeDownload()">📄 PDF herunterladen</button>
     </div>
 
-    <div class="footer-info" style="margin-top: 110px;">
+    <div class="footer-info" style="margin-top: 60px;">
         <div>Logo / Diakoniestation Gladenbach QMH Kap. 5.1.1</div>
         <div>F4 Vers.4 Nov.13</div>
         <div>Seite 2 von 2</div>
@@ -350,16 +363,16 @@
         return cv.toDataURL() === blank.toDataURL();
     }
 
-    // EXPLICIT INTERACTIVE FUNCTIONS (MANUAL SAVING/LOADING ONLY)
+    /* AKTIONEN FÜR DIE MANUELLEN BUTTONS */
     function triggerManualSave() {
         saveAllToStorage();
-        alert("💾 Ihre Tabellendaten wurden erfolgreich im lokalen Speicher gesichert!");
+        alert("💾 Gespeichert! Die Tabellendaten wurden in Ihrem Webbrowser abgelegt.");
     }
 
     function triggerManualLoad() {
         loadStoredRowData();
         calculateTotalHours();
-        alert("🔄 Gespeicherte Tabellendaten wurden geladen.");
+        alert("🔄 Wiederhergestellt! Die Daten aus dem lokalen Speicher wurden geladen.");
     }
 
     function saveAsPDFNativeDownload() {
