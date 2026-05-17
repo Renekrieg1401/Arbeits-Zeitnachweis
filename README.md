@@ -37,6 +37,63 @@
             box-shadow: 0 0 10px rgba(0,0,0,0.3);
             position: relative;
         }
+        
+        /* STEUERUNGSBUTTONS OBEN */
+        .controls-top {
+            margin-bottom: 20px;
+            padding: 15px;
+            background-color: #f1f1f1;
+            border: 2px solid #004b7c;
+            border-radius: 8px;
+            display: flex !important;
+            gap: 15px;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        /* STEUERUNGSBUTTONS UNTEN */
+        .controls-bottom { 
+            margin-top: 50px;
+            padding: 15px;
+            background-color: #f1f1f1;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            display: flex !important; 
+            justify-content: center; 
+            align-items: center;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        
+        /* Button-Styles */
+        .btn-action {
+            color: white !important;
+            border: none; 
+            padding: 12px 24px; 
+            border-radius: 5px;
+            cursor: pointer; 
+            font-weight: bold; 
+            font-size: 14px; 
+            font-family: Arial, sans-serif;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+            display: inline-block !important;
+            transition: transform 0.1s, background-color 0.2s;
+        }
+        .btn-action:active {
+            transform: scale(0.98);
+        }
+        
+        .btn-manual-save { background-color: #2e7d32 !important; } 
+        .btn-manual-save:hover { background-color: #1b5e20 !important; }
+        
+        .btn-manual-load { background-color: #ef6c00 !important; } 
+        .btn-manual-load:hover { background-color: #e65100 !important; }
+
+        .btn-save { background-color: #004b7c !important; } 
+        .btn-save:hover { background-color: #003353 !important; }
+
         .header {
             background-color: var(--header-bg-color) !important;
             padding: 15px;
@@ -113,56 +170,13 @@
             font-weight: bold; font-size: 13px;
             print-color-adjust: exact; -webkit-print-color-adjust: exact;
         }
-        
-        /* FEST FIXIERTER UND STETS SICHTBARER BUTTON-CONTAINER IM BROWSER */
-        .controls-bottom { 
-            margin-top: 50px;
-            padding: 20px;
-            background-color: #f1f1f1;
-            border: 2px solid #004b7c;
-            border-radius: 8px;
-            display: flex !important; 
-            gap: 20px; 
-            justify-content: center; 
-            align-items: center;
-            flex-wrap: wrap;
-            width: 100%;
-            box-sizing: border-box;
-        }
-        
-        /* Button-Styles */
-        .btn-action {
-            color: white !important;
-            border: none; 
-            padding: 14px 28px; 
-            border-radius: 5px;
-            cursor: pointer; 
-            font-weight: bold; 
-            font-size: 15px; 
-            font-family: Arial, sans-serif;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
-            display: inline-block !important;
-            transition: transform 0.1s, background-color 0.2s;
-        }
-        .btn-action:active {
-            transform: scale(0.98);
-        }
-        
-        .btn-manual-save { background-color: #2e7d32 !important; } 
-        .btn-manual-save:hover { background-color: #1b5e20 !important; }
-        
-        .btn-manual-load { background-color: #ef6c00 !important; } 
-        .btn-manual-load:hover { background-color: #e65100 !important; }
-
-        .btn-save { background-color: #004b7c !important; } 
-        .btn-save:hover { background-color: #003353 !important; }
 
         @media print {
             body { margin: 0; background-color: white; }
             .page { width: 100%; min-height: auto; padding: 0; box-shadow: none; }
             .page-break { border-top: none; }
             input[type="text"], input[type="month"], input[type="date"], input.cell-input { border: none !important; }
-            .btn-clear-sig, .controls-bottom { display: none !important; }
+            .btn-clear-sig, .controls-top, .controls-bottom { display: none !important; }
             .canvas-wrapper { border-bottom: none !important; background: transparent; }
         }
     </style>
@@ -170,6 +184,12 @@
 <body>
 
 <div class="page" id="pdfArea">
+    
+    <div class="controls-top">
+        <button type="button" class="btn-action btn-manual-save" onclick="triggerManualSave()">💾 Manuell Speichern</button>
+        <button type="button" class="btn-action btn-manual-load" onclick="triggerManualLoad()">🔄 Daten laden / wiederherstellen</button>
+    </div>
+
     <div class="header" id="mainHeader1">
         <h1>Arbeitszeitnachweis</h1>
         <h2>Diakoniestation Gladenbach</h2>
@@ -254,8 +274,6 @@
     </div>
 
     <div class="controls-bottom">
-        <button type="button" class="btn-action btn-manual-save" onclick="triggerManualSave()">💾 Manuell Speichern</button>
-        <button type="button" class="btn-action btn-manual-load" onclick="triggerManualLoad()">🔄 Daten laden / wiederherstellen</button>
         <button type="button" class="btn-action btn-save" onclick="saveAsPDFNativeDownload()">📄 PDF herunterladen</button>
     </div>
 
@@ -363,7 +381,6 @@
         return cv.toDataURL() === blank.toDataURL();
     }
 
-    /* AKTIONEN FÜR DIE MANUELLEN BUTTONS */
     function triggerManualSave() {
         saveAllToStorage();
         alert("💾 Gespeichert! Die Tabellendaten wurden in Ihrem Webbrowser abgelegt.");
@@ -385,8 +402,13 @@
         if (isCanvasEmpty(canvas)) { alert('❌ Bitte unterschreiben Sie das Dokument auf Seite 2 vor dem Export.'); return; }
 
         const targetFilename = `Arbeitszeitnachweis_${name}_${monatJahr}.pdf`;
-        const buttonBox = document.querySelector('.controls-bottom');
-        buttonBox.style.visibility = 'hidden';
+        
+        // Verstecke beide Button-Container vor dem Screenshot
+        const topBox = document.querySelector('.controls-top');
+        const bottomBox = document.querySelector('.controls-bottom');
+        if(topBox) topBox.style.visibility = 'hidden';
+        if(bottomBox) bottomBox.style.visibility = 'hidden';
+        
         const element = document.getElementById('pdfArea');
 
         if (window.html2canvas && window.jspdf) {
@@ -409,9 +431,18 @@
                     heightLeft -= pageHeight;
                 }
                 pdf.save(targetFilename);
-                buttonBox.style.visibility = 'visible';
-            }).catch(() => { buttonBox.style.visibility = 'visible'; window.print(); });
-        } else { buttonBox.style.visibility = 'visible'; window.print(); }
+                if(topBox) topBox.style.visibility = 'visible';
+                if(bottomBox) bottomBox.style.visibility = 'visible';
+            }).catch(() => { 
+                if(topBox) topBox.style.visibility = 'visible';
+                if(bottomBox) bottomBox.style.visibility = 'visible';
+                window.print(); 
+            });
+        } else { 
+            if(topBox) topBox.style.visibility = 'visible';
+            if(bottomBox) bottomBox.style.visibility = 'visible';
+            window.print(); 
+        }
     }
 
     function getHolidays(year) {
