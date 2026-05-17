@@ -108,19 +108,21 @@
             print-color-adjust: exact; -webkit-print-color-adjust: exact;
         }
         
-        /* KONTROLL-BAR: Flexbox mit automatischem Zeilenumbruch falls nötig */
+        /* Absolut sichtbarer und fixierter Button-Container unten */
         .controls-bottom { 
             margin-top: 40px;
-            display: flex; 
+            padding: 10px 0;
+            display: flex !important; 
             gap: 15px; 
             justify-content: flex-start; 
             align-items: center;
             flex-wrap: wrap;
+            min-height: 50px;
         }
         
         /* Allgemeine Formatierung für ALLE Buttons */
         .btn-action {
-            color: white;
+            color: white !important;
             border: none; 
             padding: 12px 24px; 
             border-radius: 4px;
@@ -129,18 +131,18 @@
             font-size: 14px; 
             font-family: Arial, sans-serif;
             box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-            display: inline-block;
+            display: inline-block !important;
         }
         
-        /* Einzigartige Farben für jeden Button */
-        .btn-save { background-color: #004b7c; } /* Blau */
-        .btn-save:hover { background-color: #003353; }
+        /* Einzigartige, kräftige Farben für jeden Button */
+        .btn-manual-save { background-color: #2e7d32 !important; } /* Grün */
+        .btn-manual-save:hover { background-color: #1b5e20 !important; }
         
-        .btn-manual-save { background-color: #2e7d32; } /* Grün */
-        .btn-manual-save:hover { background-color: #1b5e20; }
-        
-        .btn-manual-load { background-color: #ef6c00; } /* Orange */
-        .btn-manual-load:hover { background-color: #e65100; }
+        .btn-manual-load { background-color: #ef6c00 !important; } /* Orange */
+        .btn-manual-load:hover { background-color: #e65100 !important; }
+
+        .btn-save { background-color: #004b7c !important; } /* Blau */
+        .btn-save:hover { background-color: #003353 !important; }
 
         @media print {
             body { margin: 0; }
@@ -348,22 +350,19 @@
         return cv.toDataURL() === blank.toDataURL();
     }
 
-    // INTERAKTIVE STEUERUNGSFUNKTIONEN
+    // EXPLICIT INTERACTIVE FUNCTIONS (MANUAL SAVING/LOADING ONLY)
     function triggerManualSave() {
         saveAllToStorage();
-        alert("💾 Tabellendaten wurden erfolgreich im LocalStorage gesichert!");
+        alert("💾 Ihre Tabellendaten wurden erfolgreich im lokalen Speicher gesichert!");
     }
 
-    type="text"
     function triggerManualLoad() {
         loadStoredRowData();
         calculateTotalHours();
-        alert("🔄 Gespeicherte Daten wurden geladen und wiederhergestellt.");
+        alert("🔄 Gespeicherte Tabellendaten wurden geladen.");
     }
 
     function saveAsPDFNativeDownload() {
-        saveAllToStorage();
-
         const name = document.getElementById('nameInput').value.trim();
         const monatJahr = document.getElementById('monthInput').value;
         const sigDateField = document.getElementById('sigDate');
@@ -495,7 +494,6 @@
             loadStoredRowData();
         } else { 
             document.getElementById('kwInput').value = `KW ${startKW}-${endKW} / ${year}`;
-            saveAllToStorage(); 
         }
         calculateTotalHours();
     }
