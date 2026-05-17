@@ -4,13 +4,9 @@
     <meta charset="UTF-8">
     <title>Arbeitszeitnachweis - Diakoniestation Gladenbach</title>
     
-    <!-- Favoriten-Icon für moderne Browser (SVG) -->
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><circle cx='256' cy='256' r='240' fill='%23004b7c'/><circle cx='256' cy='256' r='200' fill='none' stroke='%23ffffff' stroke-width='16' stroke-dasharray='12 12' opacity='0.4'/><g fill='%23ffffff'><path d='M236 110h40v292h-40z'/><path d='M130 210h252v40H130z'/><path d='M130 210c0-40 40-40 40-40s40 0 40 40' fill='none' stroke='%23ffffff' stroke-width='40' stroke-linecap='square'/><path d='M302 210c0-40 40-40 40-40s40 0 40 40' fill='none' stroke='%23ffffff' stroke-width='40' stroke-linecap='square'/></g><path d='M256 256 l70 40' stroke='%23ffffff' stroke-width='12' stroke-linecap='round'/></svg>">
+    <link rel="apple-touch-icon" sizes="180x180" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><circle cx='256' cy='256' r='240' fill='%23004b7c'/><circle cx='256' cy='256' r='200' fill='none' stroke='%23ffffff' stroke-width='16' stroke-dasharray='12 12' opacity='0.4'/><g fill='%23ffffff'><path d='M236 110h40v292h-40z'/><path d='M130 210h252v40H130z'/><path d='M130 210c0-40 40-40 40-40s40 0 40 40' fill='none' stroke='%23ffffff' stroke-width='40' stroke-linecap='square'/><path d='M302 210c0-40 40-40 40-40s40 0 40 40' fill='none' stroke='%23ffffff' stroke-width='40' stroke-linecap='square'/></g><path d='M256 256 l70 40' stroke='%23ffffff' stroke-width='12' stroke-linecap='round'/></svg>">
 
-    <!-- Apple Touch Icon für iOS (iPhone/iPad Home-Bildschirm) -->
-    <link rel="apple-touch-icon" sizes="180x180" href="icon.png">
-
-    <!-- Kachel-Farbe für Mobilbrowser-Leisten -->
     <meta name="theme-color" content="#004b7c">
     <meta name="msapplication-TileColor" content="#004b7c">
 
@@ -18,7 +14,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
         :root {
-            --header-bg-color: #f5f5f5; 
+            --header-bg-color: #f5f5f5;
             --accent-color: #004b7c;
             --weekend-color: #f0f0f0; 
         }
@@ -50,7 +46,8 @@
         .meta-field label { font-weight: bold; font-size: 14px; }
         
         input[type="text"], input[type="month"], input[type="date"] {
-            border: none; border-bottom: 1px solid #333; background: transparent;
+            border: none;
+            border-bottom: 1px solid #333; background: transparent;
             font-size: 14px; padding: 2px; font-family: Arial, sans-serif;
         }
         .name-field { font-size: 16px; font-weight: bold; width: 250px; text-align: left; }
@@ -64,23 +61,27 @@
         .col-notes { width: 59%; text-align: left; }
         
         .notes-header {
-            font-size: 10px; text-align: left; font-weight: normal;
+            font-size: 10px;
+            text-align: left; font-weight: normal;
             background-color: var(--header-bg-color) !important;
             print-color-adjust: exact; -webkit-print-color-adjust: exact;
         }
         input.cell-input {
-            width: 100%; border: none; background: transparent;
+            width: 100%;
+            border: none; background: transparent;
             text-align: center; font-size: 12px; box-sizing: border-box;
         }
         input.cell-input-left { text-align: left; }
         
         .pause-info-text {
-            font-size: 11px; color: #555; text-align: left;
+            font-size: 11px;
+            color: #555; text-align: left;
             margin-top: 10px; font-style: italic; line-height: 1.4;
         }
         
         .footer-info {
-            margin-top: 15px; display: flex; justify-content: space-between; font-size: 10px; color: #666;
+            margin-top: 15px;
+            display: flex; justify-content: space-between; font-size: 10px; color: #666;
         }
         .page-break { page-break-before: always; margin-top: 40px; border-top: 2px dashed #ccc; padding-top: 20px; }
         
@@ -90,7 +91,8 @@
         canvas { width: 300px; height: 80px; cursor: crosshair; display: block; }
         
         .btn-clear-sig {
-            position: absolute; right: 0; top: -25px; background: #e0e0e0;
+            position: absolute;
+            right: 0; top: -25px; background: #e0e0e0;
             border: 1px solid #999; font-size: 10px; padding: 2px 5px; cursor: pointer; border-radius: 3px;
         }
         
@@ -100,13 +102,15 @@
             print-color-adjust: exact; -webkit-print-color-adjust: exact;
         }
         .total-row {
-            background-color: #eaeff5 !important; font-weight: bold; font-size: 13px;
+            background-color: #eaeff5 !important;
+            font-weight: bold; font-size: 13px;
             print-color-adjust: exact; -webkit-print-color-adjust: exact;
         }
         
         .controls-bottom { margin-top: 40px; display: flex; gap: 15px; justify-content: flex-start; align-items: center; }
         .btn-action {
-            color: white; border: none; padding: 12px 24px; border-radius: 4px;
+            color: white;
+            border: none; padding: 12px 24px; border-radius: 4px;
             cursor: pointer; font-weight: bold; font-size: 14px; font-family: Arial, sans-serif;
             box-shadow: 0 2px 4px rgba(0,0,0,0.2);
         }
@@ -126,7 +130,6 @@
 <body>
 
 <div class="page" id="pdfArea">
-    <!-- SEITE 1 -->
     <div class="header" id="mainHeader1">
         <h1>Arbeitszeitnachweis</h1>
         <h2>Diakoniestation Gladenbach</h2>
@@ -182,7 +185,6 @@
 
     <div class="page-break"></div>
     
-    <!-- SEITE 2 -->
     <div class="header" id="mainHeader2">
         <h1>Arbeitszeitnachweis</h1>
         <h2>Diakoniestation Gladenbach</h2>
@@ -229,10 +231,17 @@
         5:  '#f5f5f5', 6:  '#b3f0c2', 7:  '#ffb7ce', 8:  '#f4e7d3',
         9:  '#ffd1a4', 10: '#d7ccc8', 11: '#dec4f4', 12: '#ffb3b3'
     };
-
     const canvas = document.getElementById('sigCanvas');
     const ctx = canvas.getContext('2d');
     let isDrawing = false;
+
+    // FEHLERSICHERER SPEICHER-CHECK (Erlaubt reibungslose Ausführung in JEDEM Browser, auch offline / lokal / GitHub Pages)
+    function safeStorageGet(key) {
+        try { return localStorage.getItem(key); } catch(e) { return null; }
+    }
+    function safeStorageSet(key, value) {
+        try { localStorage.setItem(key, value); return true; } catch(e) { return false; }
+    }
 
     function initCanvas() {
         ctx.strokeStyle = '#000000';
@@ -278,7 +287,7 @@
     }
 
     function timeToMinutes(timeStr) {
-        if (!timeStr || !timeStr.includes(':')) return 0; 
+        if (!timeStr || !timeStr.includes(':')) return 0;
         const parts = timeStr.split(':');
         const h = parseInt(parts[0], 10);
         const m = parseInt(parts[1], 10);
@@ -312,7 +321,6 @@
 
             if (dailyMinutes > 0) totalNetMinutes += dailyMinutes;
         });
-
         const industrialHours = totalNetMinutes / 60;
         document.getElementById('totalHoursCell').innerText = industrialHours.toFixed(2).replace('.', ',') + ' Std.';
     }
@@ -342,6 +350,7 @@
                 const imgData = canvasObj.toDataURL('image/jpeg', 0.98);
                 const { jsPDF } = window.jspdf;
                 const pdf = new jsPDF('p', 'mm', 'a4');
+         
                 const imgWidth = 210; const pageHeight = 295;
                 const imgHeight = (canvasObj.height * imgWidth) / canvasObj.width;
                 let heightLeft = imgHeight; let position = 0;
@@ -365,12 +374,14 @@
         const holidays = [];
         const add = (d, m) => holidays.push(`${year}-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}`);
         add(1, 1); add(1, 5); add(3, 10); add(25, 12); add(26, 12);
-
         const a = year % 19, b = year % 4, c = year % 7;
         const k = Math.floor(year / 100);
-        const p = Math.floor((13 + 8 * k) / 25); const q = Math.floor(k / 4);
-        const M = (15 - p + k - q) % 30; const N = (4 + k - q) % 7;
-        const d = (19 * a + M) % 30; const e = (2 * b + 4 * c + 6 * d + N) % 7;
+        const p = Math.floor((13 + 8 * k) / 25);
+        const q = Math.floor(k / 4);
+        const M = (15 - p + k - q) % 30;
+        const N = (4 + k - q) % 7;
+        const d = (19 * a + M) % 30;
+        const e = (2 * b + 4 * c + 6 * d + N) % 7;
         const os = 22 + d + e;
         
         let osterMonat = 3, osterTag = os;
@@ -378,7 +389,8 @@
         
         const osterSonntag = new Date(year, osterMonat - 1, osterTag);
         const addRelative = (days) => {
-            const dt = new Date(osterSonntag); dt.setDate(dt.getDate() + days);
+            const dt = new Date(osterSonntag);
+            dt.setDate(dt.getDate() + days);
             holidays.push(`${dt.getFullYear()}-${String(dt.getMonth()+1).padStart(2,'0')}-${String(dt.getDate()).padStart(2,'0')}`);
         };
         addRelative(-2); addRelative(1); addRelative(39); addRelative(50); addRelative(60);
@@ -429,7 +441,6 @@
             const dateStr = `${year}-${monthStr}-${dayStr}`;
             const dateObj = new Date(year, monthIndex, i);
             const dayOfWeek = dateObj.getDay();
-
             let classes = [];
             if (dayOfWeek === 0 || dayOfWeek === 6) classes.push('weekend-row');
             if (holidays.includes(dateStr)) classes.push('holiday-row');
@@ -439,17 +450,17 @@
 
             tr.innerHTML = `
                 <td class="col-day" style="${(dayOfWeek===0||dayOfWeek===6) ? 'background-color: var(--weekend-color);' : 'background-color: transparent;'}">${dayStr}</td>
-                <td><input type="text" class="cell-input" id="cell-${i}-frueh-von" oninput="formatTimeInput(this)" onblur="handleTimeBlur(this)"></td>
-                <td><input type="text" class="cell-input" id="cell-${i}-frueh-bis" oninput="formatTimeInput(this)" onblur="handleTimeBlur(this)"></td>
-                <td><input type="text" class="cell-input" id="cell-${i}-spaet-von" oninput="formatTimeInput(this)" onblur="handleTimeBlur(this)"></td>
-                <td><input type="text" class="cell-input" id="cell-${i}-spaet-bis" oninput="formatTimeInput(this)" onblur="handleTimeBlur(this)"></td>
+                <td><input type="text" class="cell-input" id="cell-${i}-frueh-von" oninput="formatTimeInput(this)" onblur="handleTimeBlur(this)" placeholder="--:--"></td>
+                <td><input type="text" class="cell-input" id="cell-${i}-frueh-bis" oninput="formatTimeInput(this)" onblur="handleTimeBlur(this)" placeholder="--:--"></td>
+                <td><input type="text" class="cell-input" id="cell-${i}-spaet-von" oninput="formatTimeInput(this)" onblur="handleTimeBlur(this)" placeholder="--:--"></td>
+                <td><input type="text" class="cell-input" id="cell-${i}-spaet-bis" oninput="formatTimeInput(this)" onblur="handleTimeBlur(this)" placeholder="--:--"></td>
                 <td><input type="text" class="cell-input cell-input-left" id="cell-${i}-bemerkung" onblur="autoExpandNote(this)"></td>
             `;
             tbody.appendChild(tr);
         }
 
         if (!isManualChange) { 
-            loadStoredRowData(); 
+            loadStoredRowData();
         } else { 
             document.getElementById('kwInput').value = `KW ${startKW}-${endKW} / ${year}`;
             saveAllToStorage(); 
@@ -469,17 +480,16 @@
             signatureImg: canvas.toDataURL(),
             cells: {}
         };
-
         const inputs = document.querySelectorAll('#tableBody input');
         inputs.forEach(input => { if(input.value) payload.cells[input.id] = input.value; });
 
-        localStorage.setItem(dataKey, JSON.stringify(payload));
-        localStorage.setItem(storagePrefix + "last_active_month", monthValue);
-        localStorage.setItem(storagePrefix + "global_username", document.getElementById('nameInput').value);
+        safeStorageSet(dataKey, JSON.stringify(payload));
+        safeStorageSet(storagePrefix + "last_active_month", monthValue);
+        safeStorageSet(storagePrefix + "global_username", document.getElementById('nameInput').value);
     }
 
     function loadMonthDataset() {
-        const lastMonth = localStorage.getItem(storagePrefix + "last_active_month");
+        const lastMonth = safeStorageGet(storagePrefix + "last_active_month");
         if (lastMonth) {
             document.getElementById('monthInput').value = lastMonth;
         } else {
@@ -489,7 +499,7 @@
             document.getElementById('monthInput').value = `${currentYear}-${currentMonth}`;
         }
         
-        const globalName = localStorage.getItem(storagePrefix + "global_username");
+        const globalName = safeStorageGet(storagePrefix + "global_username");
         if (globalName) {
             document.getElementById('nameInput').value = globalName;
         }
@@ -513,7 +523,7 @@
         const endKW = getISOWeek(lastDay);
         document.getElementById('kwInput').value = `KW ${startKW}-${endKW} / ${year}`;
 
-        const raw = localStorage.getItem(dataKey);
+        const raw = safeStorageGet(dataKey);
         if(!raw) {
             calculateTotalHours();
             return;
@@ -545,7 +555,7 @@
     }
     
     function startDraw(e) {
-        isDrawing = true; 
+        isDrawing = true;
         const pos = getPos(e); 
         ctx.beginPath(); 
         ctx.moveTo(pos.x, pos.y);
@@ -553,7 +563,7 @@
     }
     
     function draw(e) {
-        if (!isDrawing) return; 
+        if (!isDrawing) return;
         const pos = getPos(e); 
         ctx.lineTo(pos.x, pos.y); 
         ctx.stroke();
@@ -562,7 +572,7 @@
     
     function stopDraw() { 
         if(isDrawing) { 
-            isDrawing = false; 
+            isDrawing = false;
             saveAllToStorage(); 
         } 
     }
@@ -570,11 +580,9 @@
     canvas.addEventListener('mousedown', startDraw); 
     canvas.addEventListener('mousemove', draw); 
     window.addEventListener('mouseup', stopDraw);
-    
     canvas.addEventListener('touchstart', startDraw, { passive: false }); 
     canvas.addEventListener('touchmove', draw, { passive: false }); 
     window.addEventListener('touchend', stopDraw);
-
     function clearSignature() { ctx.clearRect(0, 0, canvas.width, canvas.height); saveAllToStorage(); }
 
     document.addEventListener("DOMContentLoaded", () => {
