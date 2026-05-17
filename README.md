@@ -18,13 +18,13 @@
         body {
             font-family: Arial, sans-serif;
             margin: 0;
-            padding: 10px 10px 80px 10px; /* Platz unten für die mobile Buttonleiste */
+            padding: 10px 10px 85px 10px;
             color: #333;
             background-color: #525659; 
             -webkit-text-size-adjust: 100%;
         }
         
-        /* UNIVERSELLE MOBILE BUTTONLEISTE (Immer unten fixiert auf Handys) */
+        /* UNIVERSELLE MOBILE BUTTONLEISTE */
         .steuerungs-leiste-mobil {
             position: fixed;
             bottom: 0;
@@ -32,7 +32,7 @@
             right: 0;
             background-color: #f8f9fa !important;
             border-top: 3px solid var(--accent-color) !important;
-            padding: 10px;
+            padding: 12px 10px;
             display: flex !important;
             justify-content: space-around !important;
             gap: 8px !important;
@@ -44,7 +44,7 @@
             font-size: 14px !important;
             font-family: Arial, sans-serif !important;
             font-weight: bold !important;
-            padding: 12px 8px !important;
+            padding: 12px 6px !important;
             cursor: pointer !important;
             color: white !important;
             border: 1px solid #222 !important;
@@ -53,11 +53,9 @@
             text-align: center !important;
             box-sizing: border-box !important;
             -webkit-appearance: none;
-            -moz-appearance: none;
             appearance: none;
         }
 
-        /* MOBILER CONTAINER: Erlaubt horizontales Wischen der Tabelle auf allen Handys */
         .mobil-scroll-wrapper {
             width: 100%;
             overflow-x: auto;
@@ -93,28 +91,31 @@
         input[type="text"], input[type="month"], input[type="date"] {
             border: none;
             border-bottom: 1px solid #333; background: transparent;
-            font-size: 16px; /* 16px verhindert das Auto-Zooming auf iOS */
+            font-size: 16px; 
             padding: 2px; font-family: Arial, sans-serif;
         }
-        .name-field { font-size: 16px; font-weight: bold; width: 250px; text-align: left; }
+        .name-field { font-size: 16px; font-weight: bold; width: 220px; text-align: left; }
         
-        table { width: 100%; border-collapse: collapse; font-size: 12px; min-width: 750px; }
-        th, td { border: 1px solid #666; padding: 6px 4px; text-align: center; }
+        table { width: 100%; border-collapse: collapse; font-size: 11px; min-width: 780px; }
+        th, td { border: 1px solid #666; padding: 5px 3px; text-align: center; }
         th { background-color: #f9f9f9; font-weight: bold; }
         
-        .col-day { width: 6%; font-weight: bold; }
-        .col-time { width: 12%; }
-        .col-notes { width: 46%; text-align: left; }
+        .col-day { width: 4%; font-weight: bold; }
+        .col-time { width: 10%; }
+        .col-notes { width: 56%; text-align: left; }
         
         .notes-header {
             font-size: 10px;
-            text-align: left; font-weight: normal;
+            text-align: left; 
+            font-weight: normal;
+            line-height: 1.3;
             background-color: var(--header-bg-color) !important;
+            padding: 6px !important;
         }
         input.cell-input {
             width: 100%;
             border: none; background: transparent;
-            text-align: center; font-size: 14px; box-sizing: border-box;
+            text-align: center; font-size: 13px; box-sizing: border-box;
             -webkit-appearance: none;
             border-radius: 0;
             padding: 4px 0;
@@ -148,7 +149,6 @@
         .weekend-row { background-color: var(--weekend-color) !important; }
         .total-row { background-color: #eaeff5 !important; font-weight: bold; font-size: 13px; }
 
-        /* Für Desktop-Bildschirme zentrieren wir das Dokument schön */
         @media (min-width: 215mm) {
             body { padding: 20px; background-color: #525659; }
             .steuerungs-leiste-mobil {
@@ -210,7 +210,8 @@
                     <th colspan="2">Frühdienst</th>
                     <th colspan="2">Spätdienst</th>
                     <th class="col-notes notes-header" id="tableNotesHeader">
-                        <strong>Bemerkungen / Pause</strong>
+                        <strong>Bemerkungen / Pause</strong><br>
+                        (Pause nur eintragen, wenn nicht ins MDA eingegeben, überlange Übergaben und Rückfahrt/Nachbereitung begründen, Arztbesuche Klienten bezogen angeben)
                     </th>
                 </tr>
                 <tr>
@@ -379,7 +380,7 @@
 
     function triggerManualSave() {
         saveAllToStorage();
-        alert("💾 Daten erfolgreich auf diesem Gerät gesichert!");
+        alert("💾 Daten erfolgreich gesichert!");
     }
 
     function triggerManualLoad() {
@@ -408,11 +409,7 @@
                 const imgData = canvasObj.toDataURL('image/jpeg', 0.98);
                 const { jsPDF } = window.jspdf;
                 const pdf = new jsPDF('p', 'mm', 'a4');
-                
-                const imgWidth = 210;
-                const imgHeight = (canvasObj.height * imgWidth) / canvasObj.width;
-                
-                pdf.addImage(imgData, 'JPEG', 0, 0, imgWidth, imgHeight);
+                pdf.addImage(imgData, 'JPEG', 0, 0, 210, (canvasObj.height * 210) / canvasObj.width);
                 pdf.save(targetFilename);
                 if(leiste) leiste.style.setProperty('display', 'flex', 'important');
             }).catch(() => { 
@@ -425,14 +422,13 @@
         }
     }
 
+    // Robuste, universelle KW-Berechnung für Textastic Vorschau
     function getISOWeek(date) {
-        const target = new Date(date.valueOf());
-        const dayNr = (date.getUTCDay() + 6) % 7;
-        target.setUTCDate(target.getUTCDate() - dayNr + 3);
-        const firstThursday = target.valueOf();
-        target.setUTCMonth(0, 1);
-        if (target.getUTCDay() !== 4) { target.setUTCMonth(0, 1 + ((4 - target.getUTCDay()) + 7) % 7); }
-        return 1 + Math.ceil((firstThursday - target) / 604800000);
+        const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+        const dayNum = d.getUTCDay() || 7;
+        d.setUTCDate(d.getUTCDate() + 4 - dayNum);
+        const yearStart = new Date(Date.UTC(d.getUTCFullYear(),0,1));
+        return Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
     }
 
     function handleMonthChangeTrigger() { handleMonthUpdate(true); }
@@ -453,10 +449,12 @@
         
         if(document.getElementById('mainHeader1')) document.getElementById('mainHeader1').style.backgroundColor = newColor;
         if(document.getElementById('mainHeader2')) document.getElementById('mainHeader2').style.backgroundColor = newColor;
+        if(document.getElementById('tableNotesHeader')) document.getElementById('tableNotesHeader').style.backgroundColor = newColor;
 
-        const firstDay = new Date(Date.UTC(year, monthIndex, 1));
-        const lastDay = new Date(Date.UTC(year, monthNumber, 0));
-        const daysInMonth = lastDay.getUTCDate();
+        const firstDay = new Date(year, monthIndex, 1);
+        const lastDay = new Date(year, monthnumber = monthIndex + 1, 0);
+        const daysInMonth = lastDay.getDate();
+        
         const startKW = getISOWeek(firstDay);
         const endKW = getISOWeek(lastDay);
         
@@ -485,8 +483,11 @@
             tbody.appendChild(tr);
         }
 
-        if (!isManualChange) { loadStoredRowData(); } 
-        else { if(document.getElementById('kwInput')) document.getElementById('kwInput').value = `KW ${startKW}-${endKW} / ${year}`; }
+        if(document.getElementById('kwInput')) {
+            document.getElementById('kwInput').value = `KW ${startKW}-${endKW} / ${year}`;
+        }
+
+        if (!isManualChange) { loadStoredRowData(); }
         calculateTotalHours();
     }
 
@@ -557,34 +558,14 @@
         return { x: clientX - rect.left, y: clientY - rect.top };
     }
     
-    function startDraw(e) { 
-        isDrawing = true; 
-        const pos = getPos(e); 
-        ctx.beginPath(); 
-        ctx.moveTo(pos.x, pos.y); 
-        if(e.touches) e.preventDefault();
-    }
-    
-    function draw(e) { 
-        if (!isDrawing) return; 
-        const pos = getPos(e); 
-        ctx.lineTo(pos.x, pos.y); 
-        ctx.stroke(); 
-        if(e.touches) e.preventDefault(); 
-    }
-    
+    function startDraw(e) { isDrawing = true; const pos = getPos(e); ctx.beginPath(); ctx.moveTo(pos.x, pos.y); if(e.touches) e.preventDefault(); }
+    function draw(e) { if (!isDrawing) return; const pos = getPos(e); ctx.lineTo(pos.x, pos.y); ctx.stroke(); if(e.touches) e.preventDefault(); }
     function stopDraw() { isDrawing = false; }
 
     if (canvas) {
-        canvas.addEventListener('mousedown', startDraw); 
-        canvas.addEventListener('mousemove', draw); 
-        window.addEventListener('mouseup', stopDraw);
-        
-        canvas.addEventListener('touchstart', startDraw, { passive: false }); 
-        canvas.addEventListener('touchmove', draw, { passive: false }); 
-        window.addEventListener('touchend', stopDraw);
+        canvas.addEventListener('mousedown', startDraw); canvas.addEventListener('mousemove', draw); window.addEventListener('mouseup', stopDraw);
+        canvas.addEventListener('touchstart', startDraw, { passive: false }); canvas.addEventListener('touchmove', draw, { passive: false }); window.addEventListener('touchend', stopDraw);
     }
-    
     function clearSignature() { ctx.clearRect(0, 0, canvas.width, canvas.height); }
 
     document.addEventListener("DOMContentLoaded", () => { initCanvas(); loadMonthDataset(); });
