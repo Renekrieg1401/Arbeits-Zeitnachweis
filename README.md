@@ -107,15 +107,22 @@
             print-color-adjust: exact; -webkit-print-color-adjust: exact;
         }
         
-        .controls-bottom { margin-top: 40px; display: flex; gap: 15px; justify-content: flex-start; align-items: center; }
+        .controls-bottom { margin-top: 40px; display: flex; gap: 12px; justify-content: flex-start; align-items: center; flex-wrap: wrap; }
         .btn-action {
             color: white;
-            border: none; padding: 12px 24px; border-radius: 4px;
+            border: none; padding: 12px 20px; border-radius: 4px;
             cursor: pointer; font-weight: bold; font-size: 14px; font-family: Arial, sans-serif;
             box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            transition: background 0.2s;
         }
-        .btn-save { background-color: #004b7c; }
-        .btn-save:hover { background-color: #003353; }
+        .btn-pdf { background-color: #004b7c; }
+        .btn-pdf:hover { background-color: #003353; }
+        
+        /* NEUE BUTTON STYLES */
+        .btn-manual-save { background-color: #2e7d32; } /* Grün für Speichern */
+        .btn-manual-save:hover { background-color: #1b5e20; }
+        .btn-manual-load { background-color: #ef6c00; } /* Orange für Wiederherstellen */
+        .btn-manual-load:hover { background-color: #e65100; }
 
         @media print {
             body { margin: 0; }
@@ -214,7 +221,9 @@
     </div>
 
     <div class="controls-bottom">
-        <button class="btn-action btn-save" onclick="saveAsPDFNativeDownload()">💾 PDF generieren und herunterladen</button>
+        <button class="btn-action btn-manual-save" onclick="triggerManualSave()">Manuell Speichern</button>
+        <button class="btn-action btn-manual-load" onclick="triggerManualLoad()">Daten wiederherstellen</button>
+        <button class="btn-action btn-pdf" onclick="saveAsPDFNativeDownload()">💾 PDF herunterladen</button>
     </div>
 
     <div class="footer-info" style="margin-top: 110px;">
@@ -235,7 +244,6 @@
     const ctx = canvas.getContext('2d');
     let isDrawing = false;
 
-    // FEHLERSICHERER WRAPPER: Fängt restriktive App-Umgebungen ab
     function safeStorageGet(key) {
         try { return localStorage.getItem(key); } catch(e) { return null; }
     }
@@ -273,7 +281,6 @@
             input.value = String(h).padStart(2, '0') + ':00';
         }
         calculateTotalHours();
-        saveAllToStorage();
     }
 
     function autoExpandNote(input) {
@@ -283,7 +290,6 @@
         else if (text === 'f') { input.value = 'Fortbildung'; }
         else if (text === 'db') { input.value = 'Dienstbesprechung'; }
         else if (text === 'p') { input.value = 'Pause'; }
-        saveAllToStorage();
     }
 
     function timeToMinutes(timeStr) {
@@ -331,7 +337,22 @@
         return cv.toDataURL() === blank.toDataURL();
     }
 
+    // NEU: Funktionen für die manuellen Buttons
+    function triggerManualSave() {
+        saveAllToStorage();
+        alert("💾 Ihre Tabelleneinträge und Daten wurden erfolgreich gespeichert!");
+    }
+
+    function triggerManualLoad() {
+        loadStoredRowData();
+        calculateTotalHours();
+        alert("🔄 Daten wurden aus dem Speicher geladen und wiederhergestellt.");
+    }
+
     function saveAsPDFNativeDownload() {
+        // Vor dem Export zur Sicherheit nochmals speichern
+        saveAllToStorage();
+
         const name = document.getElementById('nameInput').value.trim();
         const monatJahr = document.getElementById('monthInput').value;
         const sigDateField = document.getElementById('sigDate');
@@ -435,7 +456,7 @@
         const holidays = getHolidays(year);
         tbody.innerHTML = '';
 
-        // KORREKTUR: Daten exakt HIER vorab holen, bevor leere HTML-Felder erzeugt werden!
+        // Daten vorab holen, um leere Überschreib-Bugs abzufangen
         const dataKey = storagePrefix + "data_" + monthValue;
         const raw = safeStorageGet(dataKey);
         const parsed = raw ? JSON.parse(raw) : null;
@@ -460,7 +481,6 @@
             const idSBis = `cell-${i}-spaet-bis`;
             const idBem  = `cell-${i}-bemerkung`;
 
-            // KORREKTUR: Die Werte werden über das value-Attribut direkt hardcodiert mitgeliefert!
             tr.innerHTML = `
                 <td class="col-day" style="${(dayOfWeek===0||dayOfWeek===6) ? 'background-color: var(--weekend-color);' : 'background-color: transparent;'}">${dayStr}</td>
                 <td><input type="text" class="cell-input" id="${idFVon}" value="${savedCells[idFVon] || ''}" oninput="formatTimeInput(this)" onblur="handleTimeBlur(this)" placeholder="--:--"></td>
@@ -586,7 +606,6 @@
     function stopDraw() { 
         if(isDrawing) { 
             isDrawing = false;
-            saveAllToStorage(); 
         } 
     }
 
@@ -596,22 +615,11 @@
     canvas.addEventListener('touchstart', startDraw, { passive: false }); 
     canvas.addEventListener('touchmove', draw, { passive: false }); 
     window.addEventListener('touchend', stopDraw);
-    function clearSignature() { ctx.clearRect(0, 0, canvas.width, canvas.height); saveAllToStorage(); }
+    function clearSignature() { ctx.clearRect(0, 0, canvas.width, canvas.height); }
 
     document.addEventListener("DOMContentLoaded", () => {
         initCanvas();
         loadMonthDataset();
-        
-        // KORREKTUR: Reagiert sauber auf Fokusverlust/Feldänderung, verhindert Datenverlust beim schnellen Switchen/Schließen
-        document.addEventListener('change', (e) => {
-            if (e.target && (e.target.classList.contains('cell-input') || e.target.id === 'nameInput' || e.target.id === 'kwInput')) {
-                saveAllToStorage();
-            }
-        });
-
-        document.getElementById('sigDate').addEventListener('change', () => {
-            saveAllToStorage();
-        });
     });
 </script>
 
