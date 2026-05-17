@@ -5,7 +5,8 @@
     <title>Arbeitszeitnachweis - Diakoniestation Gladenbach</title>
     
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><circle cx='256' cy='256' r='240' fill='%23004b7c'/><circle cx='256' cy='256' r='200' fill='none' stroke='%23ffffff' stroke-width='16' stroke-dasharray='12 12' opacity='0.4'/><g fill='%23ffffff'><path d='M236 110h40v292h-40z'/><path d='M130 210h252v40H130z'/><path d='M130 210c0-40 40-40 40-40s40 0 40 40' fill='none' stroke='%23ffffff' stroke-width='40' stroke-linecap='square'/><path d='M302 210c0-40 40-40 40-40s40 0 40 40' fill='none' stroke='%23ffffff' stroke-width='40' stroke-linecap='square'/></g><path d='M256 256 l70 40' stroke='%23ffffff' stroke-width='12' stroke-linecap='round'/></svg>">
-    <link rel="apple-touch-icon" sizes="180x180" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><circle cx='256' cy='256' r='240' fill='%23004b7c'/><circle cx='256' cy='256' r='200' fill='none' stroke='%23ffffff' stroke-width='16' stroke-dasharray='12 12' opacity='0.4'/><g fill='%23ffffff'><path d='M236 110h40v292h-40z'/><path d='M130 210h252v40H130z'/><path d='M130 210c0-40 40-40 40-40s40 0 40 40' fill='none' stroke='%23ffffff' stroke-width='40' stroke-linecap='square'/><path d='M302 210c0-40 40-40 40-40s40 0 40 40' fill='none' stroke='%23ffffff' stroke-width='40' stroke-linecap='square'/></g><path d='M256 256 l70 40' stroke='%23ffffff' stroke-width='12' stroke-linecap='round'/></svg>">
+
+    <link rel="apple-touch-icon" sizes="180x180" href="icon.png">
 
     <meta name="theme-color" content="#004b7c">
     <meta name="msapplication-TileColor" content="#004b7c">
@@ -113,15 +114,15 @@
             border: none; padding: 12px 20px; border-radius: 4px;
             cursor: pointer; font-weight: bold; font-size: 14px; font-family: Arial, sans-serif;
             box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-            transition: background 0.2s;
+            transition: background-color 0.2s;
         }
         .btn-pdf { background-color: #004b7c; }
         .btn-pdf:hover { background-color: #003353; }
         
-        /* NEUE BUTTON STYLES */
-        .btn-manual-save { background-color: #2e7d32; } /* Grün für Speichern */
+        /* STYLES FÜR DIE NEUEN MANUELLEN BUTTONS */
+        .btn-manual-save { background-color: #2e7d32; } /* Grün */
         .btn-manual-save:hover { background-color: #1b5e20; }
-        .btn-manual-load { background-color: #ef6c00; } /* Orange für Wiederherstellen */
+        .btn-manual-load { background-color: #ef6c00; } /* Orange */
         .btn-manual-load:hover { background-color: #e65100; }
 
         @media print {
@@ -223,7 +224,7 @@
     <div class="controls-bottom">
         <button class="btn-action btn-manual-save" onclick="triggerManualSave()">Manuell Speichern</button>
         <button class="btn-action btn-manual-load" onclick="triggerManualLoad()">Daten wiederherstellen</button>
-        <button class="btn-action btn-pdf" onclick="saveAsPDFNativeDownload()">💾 PDF herunterladen</button>
+        <button class="btn-action btn-pdf" onclick="saveAsPDFNativeDownload()">💾 PDF generieren und herunterladen</button>
     </div>
 
     <div class="footer-info" style="margin-top: 110px;">
@@ -243,13 +244,6 @@
     const canvas = document.getElementById('sigCanvas');
     const ctx = canvas.getContext('2d');
     let isDrawing = false;
-
-    function safeStorageGet(key) {
-        try { return localStorage.getItem(key); } catch(e) { return null; }
-    }
-    function safeStorageSet(key, value) {
-        try { localStorage.setItem(key, value); return true; } catch(e) { return false; }
-    }
 
     function initCanvas() {
         ctx.strokeStyle = '#000000';
@@ -337,20 +331,20 @@
         return cv.toDataURL() === blank.toDataURL();
     }
 
-    // NEU: Funktionen für die manuellen Buttons
+    // MANUELLE TRIGER-FUNKTIONEN
     function triggerManualSave() {
         saveAllToStorage();
-        alert("💾 Ihre Tabelleneinträge und Daten wurden erfolgreich gespeichert!");
+        alert("💾 Daten erfolgreich für diesen Monat im Speicher gesichert!");
     }
 
     function triggerManualLoad() {
         loadStoredRowData();
         calculateTotalHours();
-        alert("🔄 Daten wurden aus dem Speicher geladen und wiederhergestellt.");
+        alert("🔄 Gespeicherte Daten erfolgreich wiederhergestellt.");
     }
 
     function saveAsPDFNativeDownload() {
-        // Vor dem Export zur Sicherheit nochmals speichern
+        // Zur Sicherheit vor PDF Erstellung sichern
         saveAllToStorage();
 
         const name = document.getElementById('nameInput').value.trim();
@@ -456,12 +450,6 @@
         const holidays = getHolidays(year);
         tbody.innerHTML = '';
 
-        // Daten vorab holen, um leere Überschreib-Bugs abzufangen
-        const dataKey = storagePrefix + "data_" + monthValue;
-        const raw = safeStorageGet(dataKey);
-        const parsed = raw ? JSON.parse(raw) : null;
-        const savedCells = (parsed && parsed.cells) ? parsed.cells : {};
-
         for (let i = 1; i <= daysInMonth; i++) {
             const dayStr = String(i).padStart(2, '0');
             const monthStr = String(monthNumber).padStart(2, '0');
@@ -475,19 +463,13 @@
             const tr = document.createElement('tr');
             if (classes.length > 0) tr.className = classes.join(' ');
 
-            const idFVon = `cell-${i}-frueh-von`;
-            const idFBis = `cell-${i}-frueh-bis`;
-            const idSVon = `cell-${i}-spaet-von`;
-            const idSBis = `cell-${i}-spaet-bis`;
-            const idBem  = `cell-${i}-bemerkung`;
-
             tr.innerHTML = `
                 <td class="col-day" style="${(dayOfWeek===0||dayOfWeek===6) ? 'background-color: var(--weekend-color);' : 'background-color: transparent;'}">${dayStr}</td>
-                <td><input type="text" class="cell-input" id="${idFVon}" value="${savedCells[idFVon] || ''}" oninput="formatTimeInput(this)" onblur="handleTimeBlur(this)" placeholder="--:--"></td>
-                <td><input type="text" class="cell-input" id="${idFBis}" value="${savedCells[idFBis] || ''}" oninput="formatTimeInput(this)" onblur="handleTimeBlur(this)" placeholder="--:--"></td>
-                <td><input type="text" class="cell-input" id="${idSVon}" value="${savedCells[idSVon] || ''}" oninput="formatTimeInput(this)" onblur="handleTimeBlur(this)" placeholder="--:--"></td>
-                <td><input type="text" class="cell-input" id="${idSBis}" value="${savedCells[idSBis] || ''}" oninput="formatTimeInput(this)" onblur="handleTimeBlur(this)" placeholder="--:--"></td>
-                <td><input type="text" class="cell-input cell-input-left" id="${idBem}" value="${savedCells[idBem] || ''}" onblur="autoExpandNote(this)"></td>
+                <td><input type="text" class="cell-input" id="cell-${i}-frueh-von" oninput="formatTimeInput(this)" onblur="handleTimeBlur(this)" placeholder="--:--"></td>
+                <td><input type="text" class="cell-input" id="cell-${i}-frueh-bis" oninput="formatTimeInput(this)" onblur="handleTimeBlur(this)" placeholder="--:--"></td>
+                <td><input type="text" class="cell-input" id="cell-${i}-spaet-von" oninput="formatTimeInput(this)" onblur="handleTimeBlur(this)" placeholder="--:--"></td>
+                <td><input type="text" class="cell-input" id="cell-${i}-spaet-bis" oninput="formatTimeInput(this)" onblur="handleTimeBlur(this)" placeholder="--:--"></td>
+                <td><input type="text" class="cell-input cell-input-left" id="cell-${i}-bemerkung" onblur="autoExpandNote(this)"></td>
             `;
             tbody.appendChild(tr);
         }
@@ -496,6 +478,7 @@
             loadStoredRowData();
         } else { 
             document.getElementById('kwInput').value = `KW ${startKW}-${endKW} / ${year}`;
+            // Optional: Wenn du beim Monatswechsel automatisch mitspeichern willst, lass das hier aktiv.
             saveAllToStorage(); 
         }
         calculateTotalHours();
@@ -516,23 +499,23 @@
         const inputs = document.querySelectorAll('#tableBody input');
         inputs.forEach(input => { if(input.value) payload.cells[input.id] = input.value; });
 
-        safeStorageSet(dataKey, JSON.stringify(payload));
-        safeStorageSet(storagePrefix + "last_active_month", monthValue);
-        safeStorageSet(storagePrefix + "global_username", document.getElementById('nameInput').value);
+        localStorage.setItem(dataKey, JSON.stringify(payload));
+        localStorage.setItem(storagePrefix + "last_active_month", monthValue);
+        localStorage.setItem(storagePrefix + "global_username", document.getElementById('nameInput').value);
     }
 
     function loadMonthDataset() {
-        const lastMonth = safeStorageGet(storagePrefix + "last_active_month");
+        const lastMonth = localStorage.getItem(storagePrefix + "last_active_month");
         if (lastMonth) {
             document.getElementById('monthInput').value = lastMonth;
-        } else { 
+        } else {
             const now = new Date();
             const currentYear = now.getFullYear();
             const currentMonth = String(now.getMonth() + 1).padStart(2, '0');
             document.getElementById('monthInput').value = `${currentYear}-${currentMonth}`;
         }
         
-        const globalName = safeStorageGet(storagePrefix + "global_username");
+        const globalName = localStorage.getItem(storagePrefix + "global_username");
         if (globalName) {
             document.getElementById('nameInput').value = globalName;
         }
@@ -556,7 +539,7 @@
         const endKW = getISOWeek(lastDay);
         document.getElementById('kwInput').value = `KW ${startKW}-${endKW} / ${year}`;
 
-        const raw = safeStorageGet(dataKey);
+        const raw = localStorage.getItem(dataKey);
         if(!raw) {
             calculateTotalHours();
             return;
