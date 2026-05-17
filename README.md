@@ -235,7 +235,7 @@
     const ctx = canvas.getContext('2d');
     let isDrawing = false;
 
-    // FEHLERSICHERER SPEICHER-WRAPPER (Verhindert Abstürze in geschlossenen App-Schnittstellen)
+    // FEHLERSICHERER WRAPPER: Fängt restriktive App-Umgebungen ab
     function safeStorageGet(key) {
         try { return localStorage.getItem(key); } catch(e) { return null; }
     }
@@ -435,7 +435,7 @@
         const holidays = getHolidays(year);
         tbody.innerHTML = '';
 
-        // Vorab-Check der existierenden Speicherdaten für diesen spezifischen Monat
+        // KORREKTUR: Daten exakt HIER vorab holen, bevor leere HTML-Felder erzeugt werden!
         const dataKey = storagePrefix + "data_" + monthValue;
         const raw = safeStorageGet(dataKey);
         const parsed = raw ? JSON.parse(raw) : null;
@@ -454,14 +454,13 @@
             const tr = document.createElement('tr');
             if (classes.length > 0) tr.className = classes.join(' ');
 
-            // IDs der Zellen
             const idFVon = `cell-${i}-frueh-von`;
             const idFBis = `cell-${i}-frueh-bis`;
             const idSVon = `cell-${i}-spaet-von`;
             const idSBis = `cell-${i}-spaet-bis`;
             const idBem  = `cell-${i}-bemerkung`;
 
-            // Daten direkt beim Erzeugen injizieren, um temporär leere Zustände abzufangen
+            // KORREKTUR: Die Werte werden über das value-Attribut direkt hardcodiert mitgeliefert!
             tr.innerHTML = `
                 <td class="col-day" style="${(dayOfWeek===0||dayOfWeek===6) ? 'background-color: var(--weekend-color);' : 'background-color: transparent;'}">${dayStr}</td>
                 <td><input type="text" class="cell-input" id="${idFVon}" value="${savedCells[idFVon] || ''}" oninput="formatTimeInput(this)" onblur="handleTimeBlur(this)" placeholder="--:--"></td>
@@ -603,7 +602,7 @@
         initCanvas();
         loadMonthDataset();
         
-        // REAGIERT NUN AUF 'change' STATT 'input' – Verhindert fehlerhafte Leer-Überschreibungen
+        // KORREKTUR: Reagiert sauber auf Fokusverlust/Feldänderung, verhindert Datenverlust beim schnellen Switchen/Schließen
         document.addEventListener('change', (e) => {
             if (e.target && (e.target.classList.contains('cell-input') || e.target.id === 'nameInput' || e.target.id === 'kwInput')) {
                 saveAllToStorage();
