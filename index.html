@@ -5,8 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Arbeitszeitnachweis - Diakoniestation Gladenbach</title>
     
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"
+            onerror="window._html2canvasLadefehler=true"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"
+            onerror="window._jspdfLadefehler=true"></script>
 
     <style>
         :root {
@@ -216,9 +218,10 @@
 <div id="saveStatus">✓ Gespeichert</div>
 
 <div class="steuerungs-leiste-mobil" id="kontrollZentrum">
-    <button type="button" class="knopf-design" style="background-color: #2e7d32;" onclick="triggerManualSave()">💾 Sichern</button>
-    <button type="button" class="knopf-design" style="background-color: #ef6c00;" onclick="triggerManualLoad()">🔄 Laden</button>
-    <button type="button" class="knopf-design" style="background-color: #004b7c;" onclick="saveAsPDFNativeDownload()">📄 PDF Export</button>
+    <!-- BUTTONS AUSGEBLENDET – Funktionen triggerManualSave() / triggerManualLoad() im JS erhalten -->
+    <!-- <button type="button" class="knopf-design" style="background-color: #2e7d32;" onclick="triggerManualSave()">💾 Sichern</button> -->
+    <!-- <button type="button" class="knopf-design" style="background-color: #ef6c00;" onclick="triggerManualLoad()">🔄 Laden</button> -->
+    <button type="button" class="knopf-design" style="background-color: #004b7c;" onclick="speichernAlsPDF()">💾 Als PDF speichern</button>
 </div>
 
 <div class="mobil-scroll-wrapper">
@@ -759,45 +762,119 @@
     }
 
     /* =========================================================
-       PDF EXPORT
+       ALS PDF SPEICHERN / TEILEN
+       Stufe 1: navigator.share({ files }) → nativer iOS/Android Teilen-Dialog
+                (Dateien sichern, WhatsApp, AirDrop, Mail, …)
+       Stufe 2: <a download> → direkter Download (Desktop / Android ohne Share)
+       Stufe 3: Blob-URL in neuem Tab (iOS-Fallback wenn Share blockiert)
+       Stufe 4: CDN nicht geladen → Druckdialog
     ========================================================= */
-    function saveAsPDFNativeDownload() {
-        const name       = document.getElementById('nameInput').value.trim();
-        const monatJahr  = document.getElementById('monthInput').value;
-        const sigDateField = document.getElementById('sigDate');
+    function speichernAlsPDF() {
+        const leiste    = document.getElementById('kontrollZentrum');
+        const status    = document.getElementById('saveStatus');
+        const name      = document.getElementById('nameInput').value.trim() || 'Mitarbeiter';
+        const monatJahr = document.getElementById('monthInput').value || 'Monat';
+        const filename  = 'Arbeitszeitnachweis_' + name + '_' + monatJahr + '.pdf';
 
-        if (!name)              { alert('❌ Bitte Namen eintragen.'); return; }
-        if (!sigDateField.value) { alert('❌ Bitte Datum für Unterschrift wählen.'); return; }
-        if (isCanvasEmpty(canvas)) { alert('❌ Bitte vor dem Export unterschreiben.'); return; }
+        function wiederherstellenUI() {
+            if (leiste) leiste.style.setProperty('display', 'flex', 'important');
+            if (status) status.style.display = '';
+        }
 
-        const targetFilename = `Arbeitszeitnachweis_${name}_${monatJahr}.pdf`;
-        const leiste = document.getElementById('kontrollZentrum');
-        const status = document.getElementById('saveStatus');
+        function blobVerarbeiten(blob) {
+            wiederherstellenUI();
+            const pdfFile = new File([blob], filename, { type: 'application/pdf' });
+
+            // Stufe 1: Web Share API mit Datei → öffnet nativen Teilen-Dialog
+            if (navigator.canShare && navigator.canShare({ files: [pdfFile] })) {
+                navigator.share({
+                    files: [pdfFile],
+                    title: 'Arbeitszeitnachweis',
+                    text:  name + ' – ' + monatJahr
+                }).catch(function(err) {
+                    // Nur bei echtem Fehler (nicht bei Abbruch durch Nutzer) Fallback
+                    if (err.name !== 'AbortError') {
+                        direktDownload(blob);
+                    }
+                });
+                return;
+            }
+
+            // Stufe 2: Kein File-Share → direkter Download-Link
+            direktDownload(blob);
+        }
+
+        function direktDownload(blob) {
+            const url = URL.createObjectURL(blob);
+            const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+
+            if (!isIOS) {
+                // Desktop / Android: <a download> triggert sofortigen Download
+                const link = document.createElement('a');
+                link.href     = url;
+                link.download = filename;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                setTimeout(function() { URL.revokeObjectURL(url); }, 5000);
+            } else {
+                // Stufe 3: iOS ohne Share-API → in neuem Tab öffnen
+                // Nutzer tippt dann manuell auf Teilen-Symbol in Safari
+                window.open(url, '_blank');
+                setTimeout(function() { URL.revokeObjectURL(url); }, 30000);
+            }
+        }
+
+        // Stufe 4: CDN-Bibliotheken nicht verfügbar
+        if (!window.html2canvas || !window.jspdf) {
+            wiederherstellenUI();
+            try { window.print(); } catch(e) {
+                alert('ℹ️ Bitte die Datei in Safari öffnen – dort über\nTeilen → „In Dateien sichern" als PDF speichern.');
+            }
+            return;
+        }
+
+        // Leiste ausblenden → erscheint nicht im PDF
         if (leiste) leiste.style.setProperty('display', 'none', 'important');
         if (status) status.style.display = 'none';
 
-        const element = document.getElementById('pdfArea');
-
-        if (window.html2canvas && window.jspdf) {
-            html2canvas(element, { scale: 2, useCORS: true }).then(canvasObj => {
-                const imgData = canvasObj.toDataURL('image/jpeg', 0.98);
-                const { jsPDF } = window.jspdf;
-                const pdf = new jsPDF('p', 'mm', 'a4');
-                pdf.addImage(imgData, 'JPEG', 0, 0, 210, (canvasObj.height * 210) / canvasObj.width);
-                pdf.save(targetFilename);
-                if (leiste) leiste.style.setProperty('display', 'flex', 'important');
-                if (status) status.style.display = '';
-            }).catch(() => {
-                if (leiste) leiste.style.setProperty('display', 'flex', 'important');
-                if (status) status.style.display = '';
-                window.print();
+        try {
+            html2canvas(document.getElementById('pdfArea'), {
+                scale: 2, useCORS: true, allowTaint: true
+            })
+            .then(function(canvasObj) {
+                try {
+                    const imgData = canvasObj.toDataURL('image/jpeg', 0.92);
+                    const jsPDF   = window.jspdf.jsPDF;
+                    const pdf     = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+                    const pdfW    = pdf.internal.pageSize.getWidth();
+                    const pdfH    = (canvasObj.height * pdfW) / canvasObj.width;
+                    const pageH   = pdf.internal.pageSize.getHeight();
+                    let posY = 0;
+                    while (posY < pdfH) {
+                        if (posY > 0) pdf.addPage();
+                        pdf.addImage(imgData, 'JPEG', 0, -posY, pdfW, pdfH);
+                        posY += pageH;
+                    }
+                    blobVerarbeiten(pdf.output('blob'));
+                } catch(e) {
+                    wiederherstellenUI();
+                    alert('❌ PDF konnte nicht erstellt werden:\n' + e.message);
+                }
+            })
+            .catch(function(e) {
+                wiederherstellenUI();
+                alert('❌ Seite konnte nicht gerendert werden:\n' + (e.message || e));
             });
-        } else {
-            if (leiste) leiste.style.setProperty('display', 'flex', 'important');
-            if (status) status.style.display = '';
-            window.print();
+        } catch(e) {
+            wiederherstellenUI();
+            alert('❌ Fehler:\n' + e.message);
         }
     }
+
+    /* -- Aliasse erhalten -- */
+    function sendeNachweis()           { speichernAlsPDF(); }
+    function saveAsPDFNativeDownload() { speichernAlsPDF(); }
 
     /* =========================================================
        UNTERSCHRIFTEN-CANVAS: ZEICHNEN
