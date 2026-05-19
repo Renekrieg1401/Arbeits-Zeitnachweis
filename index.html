@@ -56,6 +56,31 @@
             appearance: none;
         }
 
+        /* Auto-Save Status Indicator */
+        #saveStatus {
+            position: fixed;
+            top: 12px;
+            right: 12px;
+            font-size: 12px;
+            font-weight: bold;
+            padding: 6px 12px;
+            border-radius: 20px;
+            z-index: 10000;
+            transition: opacity 0.4s ease;
+            pointer-events: none;
+            opacity: 0;
+        }
+        #saveStatus.saved {
+            background-color: #2e7d32;
+            color: white;
+            opacity: 1;
+        }
+        #saveStatus.saving {
+            background-color: #ef6c00;
+            color: white;
+            opacity: 1;
+        }
+
         .mobil-scroll-wrapper {
             width: 100%;
             overflow-x: auto;
@@ -80,6 +105,7 @@
             padding: 15px;
             border: 1px solid #ccc;
             margin-bottom: 20px;
+            transition: background-color 0.3s ease;
         }
         h1 { font-size: 20px; margin: 0 0 5px 0; text-transform: uppercase; letter-spacing: 1px; }
         h2 { font-size: 16px; margin: 0 0 15px 0; color: var(--accent-color); }
@@ -111,6 +137,7 @@
             line-height: 1.3;
             background-color: var(--header-bg-color) !important;
             padding: 6px !important;
+            transition: background-color 0.3s ease;
         }
         input.cell-input {
             width: 100%;
@@ -158,6 +185,12 @@
                 border: 2px solid var(--accent-color) !important;
                 border-radius: 6px;
             }
+            #saveStatus {
+                position: static;
+                display: inline-block;
+                margin-left: 10px;
+                vertical-align: middle;
+            }
             .mobil-scroll-wrapper {
                 width: 210mm;
                 margin: 0 auto;
@@ -172,12 +205,15 @@
             .page { width: 100%; min-height: auto; padding: 0; box-shadow: none; margin: 0; }
             .page-break { border-top: none; }
             input[type="text"], input[type="month"], input[type="date"], input.cell-input { border: none !important; }
-            .btn-clear-sig, .steuerungs-leiste-mobil { display: none !important; }
+            .btn-clear-sig, .steuerungs-leiste-mobil, #saveStatus { display: none !important; }
             .canvas-wrapper { border-bottom: none !important; background: transparent; }
         }
     </style>
 </head>
 <body>
+
+<!-- Auto-Save Status Anzeige -->
+<div id="saveStatus">✓ Gespeichert</div>
 
 <div class="steuerungs-leiste-mobil" id="kontrollZentrum">
     <button type="button" class="knopf-design" style="background-color: #2e7d32;" onclick="triggerManualSave()">💾 Sichern</button>
@@ -198,7 +234,8 @@
                 </div>
                 <div class="meta-field" style="margin-left: auto;">
                     <label>Name:</label>
-                    <input type="text" id="nameInput" class="name-field" placeholder="Vorname Nachname">
+                    <input type="text" id="nameInput" class="name-field" placeholder="Vorname Nachname"
+                           oninput="saveMetaFields()">
                 </div>
             </div>
         </div>
@@ -254,12 +291,14 @@
         
         <div class="meta-field" style="margin-top: 20px; font-size: 14px;">
             <label><strong>KW:</strong></label>
-            <input type="text" id="kwInput" style="width: 250px; font-weight: bold; border: none;">
+            <input type="text" id="kwInput" style="width: 250px; font-weight: bold; border: none;"
+                   oninput="saveMetaFields()">
         </div>
 
         <div class="signature-container">
             <div class="sig-block" style="width: 180px;">
-                <input type="date" id="sigDate" style="width: 100%; text-align: center; font-size: 14px;">
+                <input type="date" id="sigDate" style="width: 100%; text-align: center; font-size: 14px;"
+                       onchange="saveMetaFields()">
                 <div class="sig-label">Datum</div>
             </div>
             <div class="sig-block">
@@ -280,16 +319,27 @@
 </div>
 
 <script>
+    /* =========================================================
+       KONFIGURATION & GLOBALE VARIABLEN
+    ========================================================= */
     const storagePrefix = "diakonie_local_";
+    let autoSaveTimer = null;          // Debounce-Timer für Auto-Save
+    let currentMonth = "";             // Aktiv geladener Monat (YYYY-MM)
+
     const monthColors = {
         1:  '#cce6ff', 2:  '#ffccd5', 3:  '#e8f5e9', 4:  '#fdfd96',
         5:  '#f5f5f5', 6:  '#b3f0c2', 7:  '#ffb7ce', 8:  '#f4e7d3',
         9:  '#ffd1a4', 10: '#d7ccc8', 11: '#dec4f4', 12: '#ffb3b3'
     };
+
+    // Canvas / Unterschrift
     const canvas = document.getElementById('sigCanvas');
     const ctx = canvas.getContext('2d');
     let isDrawing = false;
 
+    /* =========================================================
+       CANVAS INITIALISIERUNG
+    ========================================================= */
     function initCanvas() {
         if (!canvas) return;
         ctx.strokeStyle = '#000000';
@@ -298,6 +348,9 @@
         ctx.lineJoin = 'round';
     }
 
+    /* =========================================================
+       HILFSFUNKTIONEN: ZEIT & EINGABE
+    ========================================================= */
     function formatTimeInput(input) {
         let val = input.value.replace(/\D/g, '');
         if (val.length > 2) {
@@ -321,15 +374,18 @@
             input.value = String(h).padStart(2, '0') + ':00';
         }
         calculateTotalHours();
+        // Nach Zeitkorrektur sofort speichern
+        scheduleAutoSave();
     }
 
     function autoExpandNote(input) {
         const text = input.value.trim().toLowerCase();
-        if (text === 'k') { input.value = 'Krank'; }
-        else if (text === 'u') { input.value = 'Urlaub'; }
-        else if (text === 'f') { input.value = 'Fortbildung'; }
+        if      (text === 'k')  { input.value = 'Krank'; }
+        else if (text === 'u')  { input.value = 'Urlaub'; }
+        else if (text === 'f')  { input.value = 'Fortbildung'; }
         else if (text === 'db') { input.value = 'Dienstbesprechung'; }
-        else if (text === 'p') { input.value = 'Pause'; }
+        else if (text === 'p')  { input.value = 'Pause'; }
+        scheduleAutoSave();
     }
 
     function timeToMinutes(timeStr) {
@@ -341,6 +397,9 @@
         return h * 60 + m;
     }
 
+    /* =========================================================
+       GESAMTSTUNDEN BERECHNUNG
+    ========================================================= */
     function calculateTotalHours() {
         let totalNetMinutes = 0;
         const rows = document.querySelectorAll('#tableBody tr');
@@ -362,46 +421,361 @@
             if (fBis > fVon) dailyMinutes += (fBis - fVon);
             if (sBis > sVon) dailyMinutes += (sBis - sVon);
 
-            if (dailyMinutes > 540) { dailyMinutes -= 45; } 
+            if      (dailyMinutes > 540) { dailyMinutes -= 45; }
             else if (dailyMinutes > 360) { dailyMinutes -= 30; }
 
             if (dailyMinutes > 0) totalNetMinutes += dailyMinutes;
         });
+
         const industrialHours = totalNetMinutes / 60;
         const cell = document.getElementById('totalHoursCell');
         if (cell) cell.innerText = industrialHours.toFixed(2).replace('.', ',') + ' Std.';
     }
 
+    /* =========================================================
+       AUTO-SAVE: DEBOUNCED SPEICHERUNG
+       Wird bei jeder Zelleingabe aufgerufen.
+       Wartet 600ms nach letzter Eingabe, dann speichert.
+    ========================================================= */
+    function scheduleAutoSave() {
+        showSaveStatus('saving');
+        if (autoSaveTimer) clearTimeout(autoSaveTimer);
+        autoSaveTimer = setTimeout(() => {
+            saveTableData();
+            showSaveStatus('saved');
+        }, 600);
+    }
+
+    /* =========================================================
+       SAVE-STATUS ANZEIGE
+    ========================================================= */
+    let statusFadeTimer = null;
+    function showSaveStatus(state) {
+        const el = document.getElementById('saveStatus');
+        if (!el) return;
+        el.className = state;
+        if (state === 'saving') {
+            el.textContent = '⏳ Speichert...';
+        } else {
+            el.textContent = '✓ Gespeichert';
+            if (statusFadeTimer) clearTimeout(statusFadeTimer);
+            statusFadeTimer = setTimeout(() => {
+                el.style.opacity = '0';
+                setTimeout(() => { el.className = ''; }, 500);
+            }, 2000);
+        }
+    }
+
+    /* =========================================================
+       CANVAS: LEER-PRÜFUNG
+    ========================================================= */
     function isCanvasEmpty(cv) {
         const blank = document.createElement('canvas');
-        blank.width = cv.width; blank.height = cv.height;
+        blank.width = cv.width;
+        blank.height = cv.height;
         return cv.toDataURL() === blank.toDataURL();
     }
 
+    /* =========================================================
+       MANUELLE SPEICHERUNG (Button)
+    ========================================================= */
     function triggerManualSave() {
-        saveAllToStorage();
+        saveTableData();
         alert("💾 Daten erfolgreich gesichert!");
     }
 
+    /* =========================================================
+       MANUELLES LADEN (Button)
+    ========================================================= */
     function triggerManualLoad() {
-        loadStoredRowData();
+        loadTableData();
         calculateTotalHours();
         alert("🔄 Letzte gespeicherte Daten geladen.");
     }
 
-    function saveAsPDFNativeDownload() {
-        const name = document.getElementById('nameInput').value.trim();
-        const monatJahr = document.getElementById('monthInput').value;
-        const sigDateField = document.getElementById('sigDate');
+    /* =========================================================
+       META-FELDER SPEICHERN (Name, KW, Datum)
+       Wird bei Änderung der Kopfzeilen-Felder aufgerufen.
+    ========================================================= */
+    function saveMetaFields() {
+        scheduleAutoSave();
+    }
+
+    /* =========================================================
+       KERNSPEICHERUNG: saveTableData()
+       Extrahiert alle Tabellenwerte + Metadaten und
+       sichert als JSON im localStorage unter dem
+       Schlüssel: diakonie_local_data_YYYY-MM
+    ========================================================= */
+    function saveTableData() {
+        const monthValue = document.getElementById('monthInput').value;
+        if (!monthValue) return;
+
+        const dataKey = storagePrefix + "data_" + monthValue;
+
+        // Alle Zelleingaben der Tabelle auslesen
+        const cells = {};
+        document.querySelectorAll('#tableBody input').forEach(input => {
+            if (input.value !== '') {
+                cells[input.id] = input.value;
+            }
+        });
+
+        // Signatur-Daten: nur speichern wenn nicht leer
+        const signatureImg = isCanvasEmpty(canvas) ? '' : canvas.toDataURL();
+
+        const payload = {
+            username:     document.getElementById('nameInput').value,
+            kwInput:      document.getElementById('kwInput').value,
+            sigDate:      document.getElementById('sigDate').value,
+            signatureImg: signatureImg,
+            cells:        cells,
+            savedAt:      new Date().toISOString()
+        };
+
+        try {
+            localStorage.setItem(dataKey, JSON.stringify(payload));
+            localStorage.setItem(storagePrefix + "last_active_month", monthValue);
+            // Benutzernamen global merken (monatsübergreifend)
+            if (payload.username) {
+                localStorage.setItem(storagePrefix + "global_username", payload.username);
+            }
+        } catch (e) {
+            console.warn("localStorage Fehler:", e);
+        }
+    }
+
+    /* =========================================================
+       KERNLADUNG: loadTableData()
+       Liest den localStorage für den aktiven Monat und
+       befüllt alle Felder mit den gespeicherten Werten.
+       Wird beim App-Start und bei jedem Monatswechsel
+       aufgerufen – NACH der Tabellengenerierung.
+    ========================================================= */
+    function loadTableData() {
+        const monthValue = document.getElementById('monthInput').value;
+        if (!monthValue) return;
+
+        const dataKey = storagePrefix + "data_" + monthValue;
+        let raw = null;
+
+        try {
+            raw = localStorage.getItem(dataKey);
+        } catch (e) {
+            console.warn("localStorage Lesefehler:", e);
+            return;
+        }
+
+        if (!raw) {
+            // Kein gespeicherter Datensatz für diesen Monat –
+            // aber globalen Benutzernamen wiederherstellen
+            const globalName = localStorage.getItem(storagePrefix + "global_username");
+            if (globalName && !document.getElementById('nameInput').value) {
+                document.getElementById('nameInput').value = globalName;
+            }
+            return;
+        }
+
+        let parsed;
+        try {
+            parsed = JSON.parse(raw);
+        } catch (e) {
+            console.warn("JSON Parse Fehler:", e);
+            return;
+        }
+
+        // Metafelder wiederherstellen
+        if (parsed.username) {
+            document.getElementById('nameInput').value = parsed.username;
+        }
+        if (parsed.kwInput) {
+            const kwEl = document.getElementById('kwInput');
+            if (kwEl) kwEl.value = parsed.kwInput;
+        }
+        if (parsed.sigDate) {
+            document.getElementById('sigDate').value = parsed.sigDate;
+        }
+
+        // Signatur wiederherstellen
+        if (parsed.signatureImg && parsed.signatureImg.length > 100) {
+            const img = new Image();
+            img.onload = function () {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                ctx.drawImage(img, 0, 0);
+            };
+            img.src = parsed.signatureImg;
+        }
+
+        // Tabellenzellen befüllen
+        if (parsed.cells) {
+            Object.keys(parsed.cells).forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.value = parsed.cells[id];
+            });
+        }
+    }
+
+    /* =========================================================
+       KW BERECHNUNG (ISO 8601, robust)
+    ========================================================= */
+    function getISOWeek(date) {
+        const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+        const dayNum = d.getUTCDay() || 7;
+        d.setUTCDate(d.getUTCDate() + 4 - dayNum);
+        const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+        return Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
+    }
+
+    /* =========================================================
+       MONATSWECHSEL: handleMonthChangeTrigger()
+       Wird beim manuellen Monatswechsel aufgerufen.
+       Speichert aktuellen Monat ZUERST, dann lädt neuen.
+    ========================================================= */
+    function handleMonthChangeTrigger() {
+        // Alten Monatsstand sichern bevor Tabelle neu generiert wird
+        if (currentMonth) {
+            const oldMonth = document.getElementById('monthInput').value;
+            // Falls sich der Monat geändert hat, den alten Stand direkt speichern
+            // (currentMonth enthält noch den alten Wert vor dem Change-Event)
+        }
+        handleMonthUpdate(true);
+    }
+
+    /* =========================================================
+       MONAT RENDERN & DATEN LADEN: handleMonthUpdate()
+       isManualChange = true  → Monatswechsel durch User
+       isManualChange = false → App-Start / init
+    ========================================================= */
+    function handleMonthUpdate(isManualChange = false) {
+        const monthInput = document.getElementById('monthInput');
+        if (!monthInput) return;
+        const monthValue = monthInput.value;
+        if (!monthValue) return;
+
+        // Aktuellen Monat merken
+        currentMonth = monthValue;
+
+        const dateTokens  = monthValue.split('-');
+        const year        = parseInt(dateTokens[0], 10);
+        const monthNumber = parseInt(dateTokens[1], 10);
+        const monthIndex  = monthNumber - 1;
+
+        // Header-Farbe anpassen
+        const newColor = monthColors[monthNumber] || '#f5f5f5';
+        document.documentElement.style.setProperty('--header-bg-color', newColor);
         
-        if (!name) { alert('❌ Bitte Namen eintragen.'); return; }
+        const h1 = document.getElementById('mainHeader1');
+        const h2 = document.getElementById('mainHeader2');
+        const nh = document.getElementById('tableNotesHeader');
+        if (h1) h1.style.backgroundColor = newColor;
+        if (h2) h2.style.backgroundColor = newColor;
+        if (nh) nh.style.backgroundColor = newColor;
+
+        // Tage des Monats berechnen (BUG-FIX: war "monthnumber" statt "monthIndex + 1")
+        const firstDay    = new Date(year, monthIndex, 1);
+        const lastDay     = new Date(year, monthIndex + 1, 0);
+        const daysInMonth = lastDay.getDate();
+
+        const startKW = getISOWeek(firstDay);
+        const endKW   = getISOWeek(lastDay);
+
+        // Tabelle neu aufbauen
+        const tbody = document.getElementById('tableBody');
+        if (!tbody) return;
+        tbody.innerHTML = '';
+
+        for (let i = 1; i <= daysInMonth; i++) {
+            const dateObj  = new Date(year, monthIndex, i);
+            const dayOfWeek = dateObj.getDay();
+            let classes = [];
+            if (dayOfWeek === 0 || dayOfWeek === 6) classes.push('weekend-row');
+
+            const tr = document.createElement('tr');
+            if (classes.length > 0) tr.className = classes.join(' ');
+
+            // WICHTIG: oninput="scheduleAutoSave()" auf allen Zeitfeldern
+            //          onblur bei Zeitfeldern auch Neuberechnung + Speicherung
+            tr.innerHTML = `
+                <td class="col-day">${String(i).padStart(2, '0')}</td>
+                <td><input type="text" pattern="[0-9]*" inputmode="numeric"
+                     class="cell-input" id="cell-${i}-frueh-von"
+                     oninput="formatTimeInput(this); scheduleAutoSave();"
+                     onblur="handleTimeBlur(this)"
+                     placeholder="--:--"></td>
+                <td><input type="text" pattern="[0-9]*" inputmode="numeric"
+                     class="cell-input" id="cell-${i}-frueh-bis"
+                     oninput="formatTimeInput(this); scheduleAutoSave();"
+                     onblur="handleTimeBlur(this)"
+                     placeholder="--:--"></td>
+                <td><input type="text" pattern="[0-9]*" inputmode="numeric"
+                     class="cell-input" id="cell-${i}-spaet-von"
+                     oninput="formatTimeInput(this); scheduleAutoSave();"
+                     onblur="handleTimeBlur(this)"
+                     placeholder="--:--"></td>
+                <td><input type="text" pattern="[0-9]*" inputmode="numeric"
+                     class="cell-input" id="cell-${i}-spaet-bis"
+                     oninput="formatTimeInput(this); scheduleAutoSave();"
+                     onblur="handleTimeBlur(this)"
+                     placeholder="--:--"></td>
+                <td><input type="text"
+                     class="cell-input cell-input-left" id="cell-${i}-bemerkung"
+                     oninput="scheduleAutoSave();"
+                     onblur="autoExpandNote(this)"></td>
+            `;
+            tbody.appendChild(tr);
+        }
+
+        // KW-Feld setzen
+        const kwEl = document.getElementById('kwInput');
+        if (kwEl) kwEl.value = `KW ${startKW}-${endKW} / ${year}`;
+
+        // ► NACH Tabellengenerierung gespeicherte Daten laden
+        loadTableData();
+        calculateTotalHours();
+    }
+
+    /* =========================================================
+       APP-INITIALISIERUNG
+    ========================================================= */
+    function loadMonthDataset() {
+        // Letzten aktiven Monat wiederherstellen oder aktuellen Monat nehmen
+        const lastMonth = localStorage.getItem(storagePrefix + "last_active_month");
+        if (lastMonth) {
+            document.getElementById('monthInput').value = lastMonth;
+        } else {
+            const now = new Date();
+            document.getElementById('monthInput').value =
+                `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+        }
+
+        // Globalen Benutzernamen vorab setzen (wird ggf. durch loadTableData überschrieben)
+        const globalName = localStorage.getItem(storagePrefix + "global_username");
+        if (globalName) {
+            document.getElementById('nameInput').value = globalName;
+        }
+
+        // Tabelle generieren + Daten laden
+        handleMonthUpdate(false);
+    }
+
+    /* =========================================================
+       PDF EXPORT
+    ========================================================= */
+    function saveAsPDFNativeDownload() {
+        const name       = document.getElementById('nameInput').value.trim();
+        const monatJahr  = document.getElementById('monthInput').value;
+        const sigDateField = document.getElementById('sigDate');
+
+        if (!name)              { alert('❌ Bitte Namen eintragen.'); return; }
         if (!sigDateField.value) { alert('❌ Bitte Datum für Unterschrift wählen.'); return; }
         if (isCanvasEmpty(canvas)) { alert('❌ Bitte vor dem Export unterschreiben.'); return; }
 
         const targetFilename = `Arbeitszeitnachweis_${name}_${monatJahr}.pdf`;
         const leiste = document.getElementById('kontrollZentrum');
-        if(leiste) leiste.style.setProperty('display', 'none', 'important');
-        
+        const status = document.getElementById('saveStatus');
+        if (leiste) leiste.style.setProperty('display', 'none', 'important');
+        if (status) status.style.display = 'none';
+
         const element = document.getElementById('pdfArea');
 
         if (window.html2canvas && window.jspdf) {
@@ -411,140 +785,23 @@
                 const pdf = new jsPDF('p', 'mm', 'a4');
                 pdf.addImage(imgData, 'JPEG', 0, 0, 210, (canvasObj.height * 210) / canvasObj.width);
                 pdf.save(targetFilename);
-                if(leiste) leiste.style.setProperty('display', 'flex', 'important');
-            }).catch(() => { 
-                if(leiste) leiste.style.setProperty('display', 'flex', 'important');
-                window.print(); 
+                if (leiste) leiste.style.setProperty('display', 'flex', 'important');
+                if (status) status.style.display = '';
+            }).catch(() => {
+                if (leiste) leiste.style.setProperty('display', 'flex', 'important');
+                if (status) status.style.display = '';
+                window.print();
             });
-        } else { 
-            if(leiste) leiste.style.setProperty('display', 'flex', 'important');
-            window.print(); 
-        }
-    }
-
-    // Robuste, universelle KW-Berechnung für Textastic Vorschau
-    function getISOWeek(date) {
-        const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
-        const dayNum = d.getUTCDay() || 7;
-        d.setUTCDate(d.getUTCDate() + 4 - dayNum);
-        const yearStart = new Date(Date.UTC(d.getUTCFullYear(),0,1));
-        return Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
-    }
-
-    function handleMonthChangeTrigger() { handleMonthUpdate(true); }
-
-    function handleMonthUpdate(isManualChange = false) {
-        const monthInput = document.getElementById('monthInput');
-        if (!monthInput) return;
-        const monthValue = monthInput.value;
-        if (!monthValue) return;
-
-        const dateTokens = monthValue.split('-');
-        const year = parseInt(dateTokens[0], 10);
-        const monthNumber = parseInt(dateTokens[1], 10);
-        const monthIndex = monthNumber - 1;
-
-        const newColor = monthColors[monthNumber] || '#f5f5f5';
-        document.documentElement.style.setProperty('--header-bg-color', newColor);
-        
-        if(document.getElementById('mainHeader1')) document.getElementById('mainHeader1').style.backgroundColor = newColor;
-        if(document.getElementById('mainHeader2')) document.getElementById('mainHeader2').style.backgroundColor = newColor;
-        if(document.getElementById('tableNotesHeader')) document.getElementById('tableNotesHeader').style.backgroundColor = newColor;
-
-        const firstDay = new Date(year, monthIndex, 1);
-        const lastDay = new Date(year, monthnumber = monthIndex + 1, 0);
-        const daysInMonth = lastDay.getDate();
-        
-        const startKW = getISOWeek(firstDay);
-        const endKW = getISOWeek(lastDay);
-        
-        const tbody = document.getElementById('tableBody');
-        if (!tbody) return;
-        tbody.innerHTML = '';
-
-        for (let i = 1; i <= daysInMonth; i++) {
-            const dayStr = String(i).padStart(2, '0');
-            const dateObj = new Date(year, monthIndex, i);
-            const dayOfWeek = dateObj.getDay();
-            let classes = [];
-            if (dayOfWeek === 0 || dayOfWeek === 6) classes.push('weekend-row');
-
-            const tr = document.createElement('tr');
-            if (classes.length > 0) tr.className = classes.join(' ');
-
-            tr.innerHTML = `
-                <td class="col-day">${dayStr}</td>
-                <td><input type="text" pattern="[0-9]*" inputmode="numeric" class="cell-input" id="cell-${i}-frueh-von" oninput="formatTimeInput(this)" onblur="handleTimeBlur(this)" placeholder="--:--"></td>
-                <td><input type="text" pattern="[0-9]*" inputmode="numeric" class="cell-input" id="cell-${i}-frueh-bis" oninput="formatTimeInput(this)" onblur="handleTimeBlur(this)" placeholder="--:--"></td>
-                <td><input type="text" pattern="[0-9]*" inputmode="numeric" class="cell-input" id="cell-${i}-spaet-von" oninput="formatTimeInput(this)" onblur="handleTimeBlur(this)" placeholder="--:--"></td>
-                <td><input type="text" pattern="[0-9]*" inputmode="numeric" class="cell-input" id="cell-${i}-spaet-bis" oninput="formatTimeInput(this)" onblur="handleTimeBlur(this)" placeholder="--:--"></td>
-                <td><input type="text" class="cell-input cell-input-left" id="cell-${i}-bemerkung" onblur="autoExpandNote(this)"></td>
-            `;
-            tbody.appendChild(tr);
-        }
-
-        if(document.getElementById('kwInput')) {
-            document.getElementById('kwInput').value = `KW ${startKW}-${endKW} / ${year}`;
-        }
-
-        if (!isManualChange) { loadStoredRowData(); }
-        calculateTotalHours();
-    }
-
-    function saveAllToStorage() {
-        const monthValue = document.getElementById('monthInput').value;
-        if (!monthValue) return;
-        const dataKey = storagePrefix + "data_" + monthValue;
-        const payload = {
-            username: document.getElementById('nameInput').value,
-            kwInput: document.getElementById('kwInput').value,
-            sigDate: document.getElementById('sigDate').value,
-            signatureImg: canvas.toDataURL(),
-            cells: {}
-        };
-        document.querySelectorAll('#tableBody input').forEach(input => { if(input.value) payload.cells[input.id] = input.value; });
-        localStorage.setItem(dataKey, JSON.stringify(payload));
-        localStorage.setItem(storagePrefix + "last_active_month", monthValue);
-        localStorage.setItem(storagePrefix + "global_username", document.getElementById('nameInput').value);
-    }
-
-    function loadMonthDataset() {
-        const lastMonth = localStorage.getItem(storagePrefix + "last_active_month");
-        if (lastMonth) {
-            document.getElementById('monthInput').value = lastMonth;
         } else {
-            const now = new Date();
-            document.getElementById('monthInput').value = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
-        }
-        
-        const globalName = localStorage.getItem(storagePrefix + "global_username");
-        if (globalName) {
-            document.getElementById('nameInput').value = globalName;
-        }
-        handleMonthUpdate(false);
-    }
-
-    function loadStoredRowData() {
-        const monthValue = document.getElementById('monthInput').value;
-        const dataKey = storagePrefix + "data_" + monthValue;
-        const raw = localStorage.getItem(dataKey);
-        if(!raw) return;
-        const parsed = JSON.parse(raw);
-        if(parsed.username) document.getElementById('nameInput').value = parsed.username;
-        if(parsed.sigDate) document.getElementById('sigDate').value = parsed.sigDate;
-        if(parsed.signatureImg && parsed.signatureImg.length > 100) {
-            const img = new Image();
-            img.onload = function() { ctx.drawImage(img, 0, 0); };
-            img.src = parsed.signatureImg;
-        }
-        if(parsed.cells) {
-            Object.keys(parsed.cells).forEach(id => {
-                const el = document.getElementById(id);
-                if(el) el.value = parsed.cells[id];
-            });
+            if (leiste) leiste.style.setProperty('display', 'flex', 'important');
+            if (status) status.style.display = '';
+            window.print();
         }
     }
 
+    /* =========================================================
+       UNTERSCHRIFTEN-CANVAS: ZEICHNEN
+    ========================================================= */
     function getPos(e) {
         const rect = canvas.getBoundingClientRect();
         let clientX, clientY;
@@ -557,18 +814,53 @@
         }
         return { x: clientX - rect.left, y: clientY - rect.top };
     }
-    
-    function startDraw(e) { isDrawing = true; const pos = getPos(e); ctx.beginPath(); ctx.moveTo(pos.x, pos.y); if(e.touches) e.preventDefault(); }
-    function draw(e) { if (!isDrawing) return; const pos = getPos(e); ctx.lineTo(pos.x, pos.y); ctx.stroke(); if(e.touches) e.preventDefault(); }
-    function stopDraw() { isDrawing = false; }
 
-    if (canvas) {
-        canvas.addEventListener('mousedown', startDraw); canvas.addEventListener('mousemove', draw); window.addEventListener('mouseup', stopDraw);
-        canvas.addEventListener('touchstart', startDraw, { passive: false }); canvas.addEventListener('touchmove', draw, { passive: false }); window.addEventListener('touchend', stopDraw);
+    function startDraw(e) {
+        isDrawing = true;
+        const pos = getPos(e);
+        ctx.beginPath();
+        ctx.moveTo(pos.x, pos.y);
+        if (e.touches) e.preventDefault();
     }
-    function clearSignature() { ctx.clearRect(0, 0, canvas.width, canvas.height); }
 
-    document.addEventListener("DOMContentLoaded", () => { initCanvas(); loadMonthDataset(); });
+    function draw(e) {
+        if (!isDrawing) return;
+        const pos = getPos(e);
+        ctx.lineTo(pos.x, pos.y);
+        ctx.stroke();
+        if (e.touches) e.preventDefault();
+    }
+
+    function stopDraw() {
+        if (isDrawing) {
+            isDrawing = false;
+            // Signatur nach dem Zeichnen automatisch speichern
+            scheduleAutoSave();
+        }
+    }
+
+    function clearSignature() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        scheduleAutoSave();
+    }
+
+    // Canvas Event-Listener
+    if (canvas) {
+        canvas.addEventListener('mousedown', startDraw);
+        canvas.addEventListener('mousemove', draw);
+        window.addEventListener('mouseup', stopDraw);
+        canvas.addEventListener('touchstart', startDraw, { passive: false });
+        canvas.addEventListener('touchmove',  draw,      { passive: false });
+        window.addEventListener('touchend',   stopDraw);
+    }
+
+    /* =========================================================
+       DOM READY: App starten
+    ========================================================= */
+    document.addEventListener("DOMContentLoaded", () => {
+        initCanvas();
+        loadMonthDataset();
+    });
 </script>
 
 </body>
