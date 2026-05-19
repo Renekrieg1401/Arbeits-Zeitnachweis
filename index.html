@@ -207,8 +207,62 @@
             .page { width: 100%; min-height: auto; padding: 0; box-shadow: none; margin: 0; }
             .page-break { border-top: none; }
             input[type="text"], input[type="month"], input[type="date"], input.cell-input { border: none !important; }
-            .btn-clear-sig, .steuerungs-leiste-mobil, #saveStatus { display: none !important; }
+            .btn-clear-sig, .steuerungs-leiste-mobil, #saveStatus, #pdfModal { display: none !important; }
             .canvas-wrapper { border-bottom: none !important; background: transparent; }
+        }
+
+        /* PDF-SENDEN MODAL */
+        #pdfModal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.6);
+            z-index: 99999;
+            align-items: flex-end;
+            justify-content: center;
+        }
+        #pdfModal.aktiv { display: flex; }
+        #pdfModalBox {
+            background: white;
+            width: 100%;
+            max-width: 500px;
+            border-radius: 18px 18px 0 0;
+            padding: 24px 20px 36px;
+            text-align: center;
+            box-shadow: 0 -4px 24px rgba(0,0,0,0.25);
+        }
+        #pdfModalBox h3 {
+            margin: 0 0 6px;
+            font-size: 18px;
+            color: #004b7c;
+        }
+        #pdfModalBox p {
+            margin: 0 0 20px;
+            font-size: 13px;
+            color: #666;
+        }
+        #btnJetztSenden {
+            width: 100%;
+            padding: 16px;
+            background: #004b7c;
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 17px;
+            font-weight: bold;
+            font-family: Arial, sans-serif;
+            cursor: pointer;
+            margin-bottom: 12px;
+        }
+        #btnModalAbbrechen {
+            width: 100%;
+            padding: 12px;
+            background: transparent;
+            color: #888;
+            border: none;
+            font-size: 15px;
+            font-family: Arial, sans-serif;
+            cursor: pointer;
         }
     </style>
 </head>
@@ -221,7 +275,7 @@
     <!-- BUTTONS AUSGEBLENDET – Funktionen triggerManualSave() / triggerManualLoad() im JS erhalten -->
     <!-- <button type="button" class="knopf-design" style="background-color: #2e7d32;" onclick="triggerManualSave()">💾 Sichern</button> -->
     <!-- <button type="button" class="knopf-design" style="background-color: #ef6c00;" onclick="triggerManualLoad()">🔄 Laden</button> -->
-    <button type="button" class="knopf-design" style="background-color: #004b7c;" onclick="speichernAlsPDF()">💾 Als PDF speichern</button>
+    <button type="button" class="knopf-design" style="background-color: #004b7c;" onclick="speichernAlsPDF()">📤 Als PDF senden</button>
 </div>
 
 <div class="mobil-scroll-wrapper">
@@ -318,6 +372,20 @@
             <div>F4 Vers.4 Nov.13</div>
             <div>Seite 2 von 2</div>
         </div>
+    </div>
+</div>
+
+<!-- PDF SENDEN MODAL -->
+<div id="pdfModal">
+    <div id="pdfModalBox">
+        <h3>✅ PDF ist bereit</h3>
+        <p id="pdfModalDateiname"></p>
+        <button type="button" id="btnJetztSenden" onclick="jetzt_teilen_synchron()">
+            📤 Jetzt senden / speichern
+        </button>
+        <button type="button" id="btnModalAbbrechen" onclick="modalSchliessen()">
+            Abbrechen
+        </button>
     </div>
 </div>
 
@@ -762,62 +830,46 @@
     }
 
     /* =========================================================
-       ALS PDF SPEICHERN / TEILEN
-       iOS-Problem: navigator.share() und window.open() müssen
-       SYNCHRON im Tap-Handler aufgerufen werden – async-Promises
-       (html2canvas) vernichten den iOS-Benutzergestenkontext.
+       PDF SENDEN – Zwei-Schritt-Ansatz (iOS-WebView kompatibel)
 
-       Lösung:
-         iOS   → window.open() sofort beim Tap → PDF rein → Safari-
-                 Teilen-Button erscheint automatisch im PDF-Viewer
-         Desktop/Android → <a download> nach async Render
+       SCHRITT 1 (async) – speichernAlsPDF():
+         html2canvas + jsPDF rendern das PDF im Hintergrund,
+         Blob wird in _bereitesBlob gespeichert,
+         Modal erscheint mit "Jetzt senden"-Button.
+
+       SCHRITT 2 (sync, direkt im Tap) – jetzt_teilen_synchron():
+         navigator.share() wird SYNCHRON im echten Tap-Handler
+         aufgerufen → iOS/Android öffnen nativen Teilen-Dialog.
+         Fallback: direkter Download-Link.
     ========================================================= */
+    let _bereitesBlob     = null;
+    let _bereiterFilename = '';
+
     function speichernAlsPDF() {
         const leiste    = document.getElementById('kontrollZentrum');
         const status    = document.getElementById('saveStatus');
         const name      = document.getElementById('nameInput').value.trim() || 'Mitarbeiter';
         const monatJahr = document.getElementById('monthInput').value || 'Monat';
-        const filename  = 'Arbeitszeitnachweis_' + name + '_' + monatJahr + '.pdf';
-        const isIOS     = /iPad|iPhone|iPod/.test(navigator.userAgent);
+        _bereiterFilename = 'Arbeitszeitnachweis_' + name + '_' + monatJahr + '.pdf';
+        _bereitesBlob     = null;
 
         function wiederherstellenUI() {
             if (leiste) leiste.style.setProperty('display', 'flex', 'important');
             if (status) status.style.display = '';
         }
 
-        // CDN nicht geladen
         if (!window.html2canvas || !window.jspdf) {
             wiederherstellenUI();
             try { window.print(); } catch(e) {
-                alert('ℹ️ Bitte in Safari öffnen und über\nTeilen → „In Dateien sichern" speichern.');
+                alert('ℹ️ Bitte in Safari öffnen:\nTeilen → „In Dateien sichern".');
             }
             return;
         }
 
-        // ── iOS: window.open() JETZT synchron aufrufen ──────────
-        // Danach kommt das async Rendering – der Tab ist bereits offen
-        let iosTab = null;
-        if (isIOS) {
-            iosTab = window.open('', '_blank');
-            if (iosTab) {
-                // Ladeanzeige in neuem Tab solange PDF gerendert wird
-                iosTab.document.write(
-                    '<html><head><meta charset="UTF-8">' +
-                    '<meta name="viewport" content="width=device-width">' +
-                    '<style>body{display:flex;align-items:center;justify-content:center;' +
-                    'height:100vh;margin:0;font-family:Arial,sans-serif;background:#f5f5f5;}' +
-                    '.box{text-align:center;color:#004b7c;}' +
-                    '.spinner{width:48px;height:48px;border:5px solid #ccc;' +
-                    'border-top-color:#004b7c;border-radius:50%;' +
-                    'animation:spin 0.9s linear infinite;margin:0 auto 16px;}' +
-                    '@keyframes spin{to{transform:rotate(360deg);}}</style></head>' +
-                    '<body><div class="box"><div class="spinner"></div>' +
-                    '<p>PDF wird erstellt…</p></div></body></html>'
-                );
-            }
-        }
+        // Button-Feedback: Wird vorbereitet…
+        const btn = document.querySelector('#kontrollZentrum .knopf-design');
+        if (btn) { btn.textContent = '⏳ Wird erstellt…'; btn.disabled = true; }
 
-        // Leiste ausblenden → nicht im PDF
         if (leiste) leiste.style.setProperty('display', 'none', 'important');
         if (status) status.style.display = 'none';
 
@@ -837,31 +889,63 @@
                 pdf.addImage(imgData, 'JPEG', 0, -posY, pdfW, pdfH);
                 posY += pageH;
             }
+            _bereitesBlob = pdf.output('blob');
 
             wiederherstellenUI();
-            const blob    = pdf.output('blob');
-            const blobURL = URL.createObjectURL(blob);
-            setTimeout(function() { URL.revokeObjectURL(blobURL); }, 60000);
+            if (btn) { btn.textContent = '📤 Als PDF senden'; btn.disabled = false; }
 
-            if (isIOS && iosTab) {
-                // PDF in bereits geöffneten Tab laden →
-                // Safari zeigt PDF-Viewer mit nativem Teilen-Button
-                iosTab.location.href = blobURL;
-            } else {
-                // Desktop / Android: direkter Download
-                const link = document.createElement('a');
-                link.href     = blobURL;
-                link.download = filename;
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-            }
+            // Modal anzeigen – Schritt 2 wartet auf echten Tap
+            const el = document.getElementById('pdfModalDateiname');
+            if (el) el.textContent = _bereiterFilename;
+            document.getElementById('pdfModal').classList.add('aktiv');
         })
         .catch(function(e) {
-            if (iosTab) { iosTab.close(); }
             wiederherstellenUI();
-            alert('❌ Fehler beim Rendern:\n' + (e.message || e));
+            if (btn) { btn.textContent = '📤 Als PDF senden'; btn.disabled = false; }
+            alert('❌ Fehler:\n' + (e.message || e));
         });
+    }
+
+    // SCHRITT 2: Echter synchroner Tap → Share-Dialog öffnet sich
+    function jetzt_teilen_synchron() {
+        if (!_bereitesBlob) { alert('❌ Kein PDF bereit. Bitte erneut versuchen.'); return; }
+
+        const file = new File([_bereitesBlob], _bereiterFilename, { type: 'application/pdf' });
+
+        // navigator.share() synchron im Tap → funktioniert auf iOS Safari + Android
+        if (navigator.canShare && navigator.canShare({ files: [file] })) {
+            navigator.share({ files: [file], title: 'Arbeitszeitnachweis' })
+                .then(function()  { modalSchliessen(); })
+                .catch(function(e) { if (e.name !== 'AbortError') { direktDownload(); } });
+            return;
+        }
+
+        // Fallback: navigator.share ohne Datei
+        if (navigator.share) {
+            navigator.share({ title: 'Arbeitszeitnachweis', text: _bereiterFilename })
+                .then(function() { direktDownload(); })
+                .catch(function() { direktDownload(); });
+            return;
+        }
+
+        // Letzter Fallback: direkter Download
+        direktDownload();
+    }
+
+    function direktDownload() {
+        const url  = URL.createObjectURL(_bereitesBlob);
+        const link = document.createElement('a');
+        link.href     = url;
+        link.download = _bereiterFilename;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        setTimeout(function() { URL.revokeObjectURL(url); }, 5000);
+        modalSchliessen();
+    }
+
+    function modalSchliessen() {
+        document.getElementById('pdfModal').classList.remove('aktiv');
     }
 
     /* -- Aliasse erhalten -- */
