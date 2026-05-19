@@ -763,11 +763,14 @@
 
     /* =========================================================
        ALS PDF SPEICHERN / TEILEN
-       Stufe 1: navigator.share({ files }) → nativer iOS/Android Teilen-Dialog
-                (Dateien sichern, WhatsApp, AirDrop, Mail, …)
-       Stufe 2: <a download> → direkter Download (Desktop / Android ohne Share)
-       Stufe 3: Blob-URL in neuem Tab (iOS-Fallback wenn Share blockiert)
-       Stufe 4: CDN nicht geladen → Druckdialog
+       iOS-Problem: navigator.share() und window.open() müssen
+       SYNCHRON im Tap-Handler aufgerufen werden – async-Promises
+       (html2canvas) vernichten den iOS-Benutzergestenkontext.
+
+       Lösung:
+         iOS   → window.open() sofort beim Tap → PDF rein → Safari-
+                 Teilen-Button erscheint automatisch im PDF-Viewer
+         Desktop/Android → <a download> nach async Render
     ========================================================= */
     function speichernAlsPDF() {
         const leiste    = document.getElementById('kontrollZentrum');
@@ -775,101 +778,90 @@
         const name      = document.getElementById('nameInput').value.trim() || 'Mitarbeiter';
         const monatJahr = document.getElementById('monthInput').value || 'Monat';
         const filename  = 'Arbeitszeitnachweis_' + name + '_' + monatJahr + '.pdf';
+        const isIOS     = /iPad|iPhone|iPod/.test(navigator.userAgent);
 
         function wiederherstellenUI() {
             if (leiste) leiste.style.setProperty('display', 'flex', 'important');
             if (status) status.style.display = '';
         }
 
-        function blobVerarbeiten(blob) {
-            wiederherstellenUI();
-            const pdfFile = new File([blob], filename, { type: 'application/pdf' });
-
-            // Stufe 1: Web Share API mit Datei → öffnet nativen Teilen-Dialog
-            if (navigator.canShare && navigator.canShare({ files: [pdfFile] })) {
-                navigator.share({
-                    files: [pdfFile],
-                    title: 'Arbeitszeitnachweis',
-                    text:  name + ' – ' + monatJahr
-                }).catch(function(err) {
-                    // Nur bei echtem Fehler (nicht bei Abbruch durch Nutzer) Fallback
-                    if (err.name !== 'AbortError') {
-                        direktDownload(blob);
-                    }
-                });
-                return;
-            }
-
-            // Stufe 2: Kein File-Share → direkter Download-Link
-            direktDownload(blob);
-        }
-
-        function direktDownload(blob) {
-            const url = URL.createObjectURL(blob);
-            const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
-
-            if (!isIOS) {
-                // Desktop / Android: <a download> triggert sofortigen Download
-                const link = document.createElement('a');
-                link.href     = url;
-                link.download = filename;
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-                setTimeout(function() { URL.revokeObjectURL(url); }, 5000);
-            } else {
-                // Stufe 3: iOS ohne Share-API → in neuem Tab öffnen
-                // Nutzer tippt dann manuell auf Teilen-Symbol in Safari
-                window.open(url, '_blank');
-                setTimeout(function() { URL.revokeObjectURL(url); }, 30000);
-            }
-        }
-
-        // Stufe 4: CDN-Bibliotheken nicht verfügbar
+        // CDN nicht geladen
         if (!window.html2canvas || !window.jspdf) {
             wiederherstellenUI();
             try { window.print(); } catch(e) {
-                alert('ℹ️ Bitte die Datei in Safari öffnen – dort über\nTeilen → „In Dateien sichern" als PDF speichern.');
+                alert('ℹ️ Bitte in Safari öffnen und über\nTeilen → „In Dateien sichern" speichern.');
             }
             return;
         }
 
-        // Leiste ausblenden → erscheint nicht im PDF
+        // ── iOS: window.open() JETZT synchron aufrufen ──────────
+        // Danach kommt das async Rendering – der Tab ist bereits offen
+        let iosTab = null;
+        if (isIOS) {
+            iosTab = window.open('', '_blank');
+            if (iosTab) {
+                // Ladeanzeige in neuem Tab solange PDF gerendert wird
+                iosTab.document.write(
+                    '<html><head><meta charset="UTF-8">' +
+                    '<meta name="viewport" content="width=device-width">' +
+                    '<style>body{display:flex;align-items:center;justify-content:center;' +
+                    'height:100vh;margin:0;font-family:Arial,sans-serif;background:#f5f5f5;}' +
+                    '.box{text-align:center;color:#004b7c;}' +
+                    '.spinner{width:48px;height:48px;border:5px solid #ccc;' +
+                    'border-top-color:#004b7c;border-radius:50%;' +
+                    'animation:spin 0.9s linear infinite;margin:0 auto 16px;}' +
+                    '@keyframes spin{to{transform:rotate(360deg);}}</style></head>' +
+                    '<body><div class="box"><div class="spinner"></div>' +
+                    '<p>PDF wird erstellt…</p></div></body></html>'
+                );
+            }
+        }
+
+        // Leiste ausblenden → nicht im PDF
         if (leiste) leiste.style.setProperty('display', 'none', 'important');
         if (status) status.style.display = 'none';
 
-        try {
-            html2canvas(document.getElementById('pdfArea'), {
-                scale: 2, useCORS: true, allowTaint: true
-            })
-            .then(function(canvasObj) {
-                try {
-                    const imgData = canvasObj.toDataURL('image/jpeg', 0.92);
-                    const jsPDF   = window.jspdf.jsPDF;
-                    const pdf     = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
-                    const pdfW    = pdf.internal.pageSize.getWidth();
-                    const pdfH    = (canvasObj.height * pdfW) / canvasObj.width;
-                    const pageH   = pdf.internal.pageSize.getHeight();
-                    let posY = 0;
-                    while (posY < pdfH) {
-                        if (posY > 0) pdf.addPage();
-                        pdf.addImage(imgData, 'JPEG', 0, -posY, pdfW, pdfH);
-                        posY += pageH;
-                    }
-                    blobVerarbeiten(pdf.output('blob'));
-                } catch(e) {
-                    wiederherstellenUI();
-                    alert('❌ PDF konnte nicht erstellt werden:\n' + e.message);
-                }
-            })
-            .catch(function(e) {
-                wiederherstellenUI();
-                alert('❌ Seite konnte nicht gerendert werden:\n' + (e.message || e));
-            });
-        } catch(e) {
+        html2canvas(document.getElementById('pdfArea'), {
+            scale: 2, useCORS: true, allowTaint: true
+        })
+        .then(function(canvasObj) {
+            const imgData = canvasObj.toDataURL('image/jpeg', 0.92);
+            const jsPDF   = window.jspdf.jsPDF;
+            const pdf     = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+            const pdfW    = pdf.internal.pageSize.getWidth();
+            const pdfH    = (canvasObj.height * pdfW) / canvasObj.width;
+            const pageH   = pdf.internal.pageSize.getHeight();
+            let posY = 0;
+            while (posY < pdfH) {
+                if (posY > 0) pdf.addPage();
+                pdf.addImage(imgData, 'JPEG', 0, -posY, pdfW, pdfH);
+                posY += pageH;
+            }
+
             wiederherstellenUI();
-            alert('❌ Fehler:\n' + e.message);
-        }
+            const blob    = pdf.output('blob');
+            const blobURL = URL.createObjectURL(blob);
+            setTimeout(function() { URL.revokeObjectURL(blobURL); }, 60000);
+
+            if (isIOS && iosTab) {
+                // PDF in bereits geöffneten Tab laden →
+                // Safari zeigt PDF-Viewer mit nativem Teilen-Button
+                iosTab.location.href = blobURL;
+            } else {
+                // Desktop / Android: direkter Download
+                const link = document.createElement('a');
+                link.href     = blobURL;
+                link.download = filename;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            }
+        })
+        .catch(function(e) {
+            if (iosTab) { iosTab.close(); }
+            wiederherstellenUI();
+            alert('❌ Fehler beim Rendern:\n' + (e.message || e));
+        });
     }
 
     /* -- Aliasse erhalten -- */
