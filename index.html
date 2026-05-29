@@ -624,71 +624,97 @@ function overlaySchliessen(){ document.getElementById('startOverlay').classList.
 ═══════════════════════════════════════════════════════════ */
 let _bereitesBlob=null, _bereiterFilename='';
 function speichernAlsPDF(){
-    const leiste=document.getElementById('kontrollZentrum'), status=document.getElementById('saveStatus');
-    const name=document.getElementById('nameInput').value.trim()||'Mitarbeiter';
-    const mj=document.getElementById('monthInput').value||'Monat';
-    _bereiterFilename=`Arbeitszeitnachweis_${name}_${mj}.pdf`; _bereitesBlob=null;
-    const wieder=()=>{ if(leiste)leiste.style.setProperty('display','flex','important'); if(status)status.style.display=''; };
+    const leiste = document.getElementById('kontrollZentrum');
+    const status  = document.getElementById('saveStatus');
+    const name    = document.getElementById('nameInput').value.trim() || 'Mitarbeiter';
+    const mj      = document.getElementById('monthInput').value || 'Monat';
+    _bereiterFilename = `Arbeitszeitnachweis_${name}_${mj}.pdf`;
+    _bereitesBlob = null;
+    const wieder = () => {
+        if(leiste) leiste.style.setProperty('display','flex','important');
+        if(status) status.style.display = '';
+    };
 
-    if (!window.html2canvas || !window.jspdf){ wieder(); try{window.print();}catch(e){ alert('ℹ️ Bitte in Safari öffnen: Teilen → „In Dateien sichern".'); } return; }
+    if (!window.html2canvas || !window.jspdf){
+        wieder();
+        try { window.print(); } catch(e) { alert('ℹ️ Bitte in Safari öffnen.'); }
+        return;
+    }
 
-    const btn=document.querySelector('#kontrollZentrum .knopf-design');
-    if(btn){ btn.textContent='⏳ Wird erstellt…'; btn.disabled=true; }
+    const btn = document.querySelector('#kontrollZentrum .knopf-design');
+    if(btn){ btn.textContent = '⏳ Wird erstellt…'; btn.disabled = true; }
 
-    const page=document.getElementById('pdfArea');
-    const prevZoom=page.style.zoom;
+    const page = document.getElementById('pdfArea');
+    const prevZoom = page.style.zoom;
 
-    // Zoom zurücksetzen für korrektes Rendering + Messung
-    page.style.zoom='';
-    void page.offsetHeight; // Reflow erzwingen
+    // Zoom zurücksetzen + zwei RAF-Zyklen für vollständigen Reflow
+    page.style.zoom = '';
+    requestAnimationFrame(() => requestAnimationFrame(() => {
 
-    // Split-Punkt am .page-break-Element messen
-    const pb       = document.querySelector('.page-break');
-    const pageRect = page.getBoundingClientRect();
-    const splitFraction = pb
-        ? Math.max(0.40, Math.min(0.72,
-            (pb.getBoundingClientRect().top - pageRect.top) / pageRect.height))
-        : 0.5;
+        // ── Split-Punkt: Oberkante des .page-break-Divs (via BoundingClientRect) ──
+        const pb       = document.querySelector('.page-break');
+        const pageR    = page.getBoundingClientRect();
+        const pbR      = pb ? pb.getBoundingClientRect() : null;
+        const splitFrac = pbR
+            ? Math.max(0.40, Math.min(0.78, (pbR.top - pageR.top) / pageR.height))
+            : 0.55;
 
-    if(leiste)leiste.style.setProperty('display','none','important');
-    if(status)status.style.display='none';
+        if(leiste) leiste.style.setProperty('display','none','important');
+        if(status) status.style.display = 'none';
 
-    html2canvas(page,{scale:2,useCORS:true,allowTaint:true}).then(co=>{
-        page.style.zoom=prevZoom;
+        html2canvas(page, { scale:2, useCORS:true, allowTaint:true }).then(co => {
+            page.style.zoom = prevZoom;
 
-        // Canvas am Seitenumbruch aufteilen → garantiert exakt 2 Seiten
-        const splitY = Math.round(co.height * splitFraction);
+            // ── Canvas am Split-Punkt aufteilen ──
+            const splitY = Math.round(co.height * splitFrac);
 
-        // Seite 1: oberer Teil
-        const c1=document.createElement('canvas');
-        c1.width=co.width; c1.height=splitY;
-        c1.getContext('2d').drawImage(co, 0,0,co.width,splitY, 0,0,co.width,splitY);
+            const c1 = document.createElement('canvas');
+            c1.width = co.width; c1.height = splitY;
+            c1.getContext('2d').drawImage(co, 0, 0, co.width, splitY, 0, 0, co.width, splitY);
 
-        // Seite 2: unterer Teil
-        const c2=document.createElement('canvas');
-        c2.width=co.width; c2.height=co.height-splitY;
-        c2.getContext('2d').drawImage(co, 0,splitY,co.width,co.height-splitY, 0,0,co.width,co.height-splitY);
+            const c2 = document.createElement('canvas');
+            c2.width = co.width; c2.height = Math.max(1, co.height - splitY);
+            c2.getContext('2d').drawImage(co, 0, splitY, co.width, co.height - splitY, 0, 0, co.width, co.height - splitY);
 
-        const img1=c1.toDataURL('image/jpeg',0.92);
-        const img2=c2.toDataURL('image/jpeg',0.92);
+            // ── PDF mit 10mm Rand, Seitenverhältnis erhalten ──
+            const jsPDF = window.jspdf.jsPDF;
+            const pdf   = new jsPDF({ orientation:'portrait', unit:'mm', format:'a4' });
+            const PW    = pdf.internal.pageSize.getWidth();    // 210 mm
+            const PH    = pdf.internal.pageSize.getHeight();   // 297 mm
+            const M     = 10;          // Rand auf allen Seiten
+            const aW    = PW - 2*M;   // 190 mm nutzbar
+            const aH    = PH - 2*M;   // 277 mm nutzbar
 
-        const jsPDF=window.jspdf.jsPDF;
-        const pdf=new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
-        const W=pdf.internal.pageSize.getWidth();   // 210 mm
-        const H=pdf.internal.pageSize.getHeight();  // 297 mm
+            function seiteEinfuegen(cvs) {
+                const img  = cvs.toDataURL('image/jpeg', 0.93);
+                const asp  = cvs.width / cvs.height;
+                // Erst auf volle Breite skalieren, dann prüfen ob Höhe überschritten
+                let dW = aW, dH = aW / asp;
+                if (dH > aH) { dH = aH; dW = aH * asp; }
+                // Horizontal zentrieren, vertikal oben ausrichten
+                const x = M + (aW - dW) / 2;
+                const y = M;
+                pdf.addImage(img, 'JPEG', x, y, dW, dH);
+            }
 
-        pdf.addImage(img1,'JPEG',0,0,W,H);   // Seite 1 füllt genau A4
-        pdf.addPage();
-        pdf.addImage(img2,'JPEG',0,0,W,H);   // Seite 2 füllt genau A4
+            seiteEinfuegen(c1);          // Seite 1: Tabelle
+            pdf.addPage();
+            seiteEinfuegen(c2);          // Seite 2: Unterschrift/KW
 
-        _bereitesBlob=pdf.output('blob');
-        wieder(); if(btn){ btn.textContent='📤 Als PDF senden'; btn.disabled=false; }
-        const el=document.getElementById('pdfModalDateiname'); if(el) el.textContent=_bereiterFilename;
-        document.getElementById('pdfModal').classList.add('aktiv');
-    }).catch(e=>{
-        page.style.zoom=prevZoom; wieder(); if(btn){ btn.textContent='📤 Als PDF senden'; btn.disabled=false; }
-        alert('❌ Fehler:\n'+(e.message||e));
-    });
+            _bereitesBlob = pdf.output('blob');
+            wieder();
+            if(btn){ btn.textContent = '📤 Als PDF senden'; btn.disabled = false; }
+            const el = document.getElementById('pdfModalDateiname');
+            if(el) el.textContent = _bereiterFilename;
+            document.getElementById('pdfModal').classList.add('aktiv');
+
+        }).catch(e => {
+            page.style.zoom = prevZoom;
+            wieder();
+            if(btn){ btn.textContent = '📤 Als PDF senden'; btn.disabled = false; }
+            alert('❌ Fehler:\n' + (e.message || e));
+        });
+    })); // end double RAF
 }
 function jetzt_teilen_synchron(){
     if(!_bereitesBlob){ alert('❌ Kein PDF bereit.'); return; }
