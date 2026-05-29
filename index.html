@@ -1,245 +1,143 @@
-<!-- APP-VERSION: 2025-05-25-001 -->
+<!-- APP-VERSION: 2025-05-25-002 -->
 <!DOCTYPE html>
 <html lang="de">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes, viewport-fit=cover">
     <title>Arbeitszeitnachweis - Diakoniestation Gladenbach</title>
 
-    <!-- ═══════════════════════════════════════════════════════
-         PWA: APP-ICON & INSTALLIERBARKEIT
-         Icon: blaues Kreuz (Diakonie) als eingebettetes SVG
-    ═══════════════════════════════════════════════════════ -->
+    <!-- ═══ PWA: APP-ICON & INSTALLIERBARKEIT ═══ -->
     <meta name="theme-color" content="#004b7c">
     <meta name="application-name" content="Arbeitszeitnachweis">
-
-    <!-- iOS: "Zum Home-Bildschirm" → erzeugt App-Icon -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Zeitnachweis">
-    <link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxOTIgMTkyIj48cmVjdCB3aWR0aD0iMTkyIiBoZWlnaHQ9IjE5MiIgcng9IjM4IiBmaWxsPSIjMDA0YjdjIi8+PHJlY3QgeD0iNzYiIHk9IjM4IiB3aWR0aD0iNDAiIGhlaWdodD0iMTE2IiByeD0iMTAiIGZpbGw9IndoaXRlIi8+PHJlY3QgeD0iMzgiIHk9Ijc2IiB3aWR0aD0iMTE2IiBoZWlnaHQ9IjQwIiByeD0iMTAiIGZpbGw9IndoaXRlIi8+PC9zdmc+">
+    <link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxOTIgMTkyIj4KICA8cmVjdCB3aWR0aD0iMTkyIiBoZWlnaHQ9IjE5MiIgZmlsbD0id2hpdGUiLz4KICA8cmVjdCB4PSIwIiB5PSIwIiB3aWR0aD0iODkiIGhlaWdodD0iODkiIGZpbGw9IiM2YjlmYzQiLz4KICA8cmVjdCB4PSIxMDMiIHk9IjAiIHdpZHRoPSI4OSIgaGVpZ2h0PSI4OSIgZmlsbD0iIzZiOWZjNCIvPgogIDxwYXRoIGQ9Ik0gNiA4OSBBIDQwIDQwIDAgMCAxIDgzIDg5IiBmaWxsPSJub25lIiBzdHJva2U9IndoaXRlIiBzdHJva2Utd2lkdGg9IjE3IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8cGF0aCBkPSJNIDEwOSA4OSBBIDQwIDQwIDAgMCAxIDE4NiA4OSIgZmlsbD0ibm9uZSIgc3Ryb2tlPSJ3aGl0ZSIgc3Ryb2tlLXdpZHRoPSIxNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+CiAgPHJlY3QgeD0iMCIgeT0iMTAzIiB3aWR0aD0iODkiIGhlaWdodD0iODkiIGZpbGw9IiM2YjlmYzQiLz4KICA8cmVjdCB4PSIxMDMiIHk9IjEwMyIgd2lkdGg9Ijg5IiBoZWlnaHQ9Ijg5IiBmaWxsPSIjNmI5ZmM0Ii8+Cjwvc3ZnPg==">
+    <link rel="manifest" href="data:application/json;charset=utf-8,%7B%22name%22%3A%22Arbeitszeitnachweis%20Diakoniestation%22%2C%22short_name%22%3A%22Zeitnachweis%22%2C%22start_url%22%3A%22.%22%2C%22display%22%3A%22standalone%22%2C%22orientation%22%3A%22portrait%22%2C%22background_color%22%3A%22%23525659%22%2C%22theme_color%22%3A%22%23004b7c%22%2C%22icons%22%3A%5B%7B%22src%22%3A%22data%3Aimage%2Fsvg%2Bxml%3Bbase64%2CPHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxOTIgMTkyIj48cmVjdCB3aWR0aD0iMTkyIiBoZWlnaHQ9IjE5MiIgcng9IjM4IiBmaWxsPSIjMDA0YjdjIi8+PHJlY3QgeD0iNzYiIHk9IjM4IiB3aWR0aD0iNDAiIGhlaWdodD0iMTE2IiByeD0iMTAiIGZpbGw9IndoaXRlIi8+PHJlY3QgeD0iMzgiIHk9Ijc2IiB3aWR0aD0iMTE2IiBoZWlnaHQ9IjQwIiByeD0iMTAiIGZpbGw9IndoaXRlIi8+PC9zdmc+%22%2C%22sizes%22%3A%22192x192%22%2C%22type%22%3A%22image%2Fsvg%2Bxml%22%7D%5D%7D">
 
-    <!-- Android/Chrome: Web App Manifest (eingebettet als data-URI) -->
-    <link rel="manifest" href="data:application/json;charset=utf-8,%7B%22name%22%3A%22Arbeitszeitnachweis%20Diakoniestation%22%2C%22short_name%22%3A%22Zeitnachweis%22%2C%22description%22%3A%22Arbeitszeitnachweis%20Diakoniestation%20Gladenbach%22%2C%22start_url%22%3A%22.%22%2C%22display%22%3A%22standalone%22%2C%22orientation%22%3A%22portrait%22%2C%22background_color%22%3A%22%23525659%22%2C%22theme_color%22%3A%22%23004b7c%22%2C%22icons%22%3A%5B%7B%22src%22%3A%22data%3Aimage%2Fsvg%2Bxml%3Bbase64%2CPHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxOTIgMTkyIj48cmVjdCB3aWR0aD0iMTkyIiBoZWlnaHQ9IjE5MiIgcng9IjM4IiBmaWxsPSIjMDA0YjdjIi8+PHJlY3QgeD0iNzYiIHk9IjM4IiB3aWR0aD0iNDAiIGhlaWdodD0iMTE2IiByeD0iMTAiIGZpbGw9IndoaXRlIi8+PHJlY3QgeD0iMzgiIHk9Ijc2IiB3aWR0aD0iMTE2IiBoZWlnaHQ9IjQwIiByeD0iMTAiIGZpbGw9IndoaXRlIi8+PC9zdmc%2B%22%2C%22sizes%22%3A%22192x192%22%2C%22type%22%3A%22image%2Fsvg%2Bxml%22%7D%2C%7B%22src%22%3A%22data%3Aimage%2Fsvg%2Bxml%3Bbase64%2CPHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj48cmVjdCB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgcng9IjEwMCIgZmlsbD0iIzAwNGI3YyIvPjxyZWN0IHg9IjIwNiIgeT0iMTAwIiB3aWR0aD0iMTAwIiBoZWlnaHQ9IjMxMiIgcng9IjIwIiBmaWxsPSJ3aGl0ZSIvPjxyZWN0IHg9IjEwMCIgeT0iMjA2IiB3aWR0aD0iMzEyIiBoZWlnaHQ9IjEwMCIgcng9IjIwIiBmaWxsPSJ3aGl0ZSIvPjwvc3ZnPg%3D%3D%22%2C%22sizes%22%3A%22512x512%22%2C%22type%22%3A%22image%2Fsvg%2Bxml%22%7D%5D%7D">
-
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"
-            onerror="window._html2canvasLadefehler=true"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"
-            onerror="window._jspdfLadefehler=true"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" onerror="window._h2cErr=true"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" onerror="window._jspdfErr=true"></script>
 
     <style>
-        :root {
-            --header-bg-color: #f5f5f5;
-            --accent-color: #004b7c;
-            --weekend-color: #f0f0f0;
-        }
-        *, *::before, *::after { box-sizing: border-box; }
+        :root { --header-bg-color:#f5f5f5; --accent-color:#004b7c; --weekend-color:#f0f0f0; }
+        *,*::before,*::after { box-sizing:border-box; }
+        body { font-family:Arial,sans-serif; margin:0; padding:10px 10px 80px; color:#333; background:#525659; -webkit-text-size-adjust:100%; min-height:100vh; }
 
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 10px 10px 80px 10px;
-            color: #333;
-            background-color: #525659;
-            -webkit-text-size-adjust: 100%;
-            min-height: 100vh;
-        }
+        /* UPDATE-BANNER */
+        #updateBanner { display:none; position:fixed; top:0; left:0; right:0; background:#2e7d32; color:#fff; padding:12px 16px; z-index:99998; font-size:14px; align-items:center; justify-content:space-between; gap:10px; box-shadow:0 2px 8px rgba(0,0,0,.3); }
+        #updateBanner.aktiv { display:flex; }
+        #updateBanner button { background:#fff; color:#2e7d32; border:none; border-radius:6px; padding:6px 14px; font-weight:bold; font-size:13px; cursor:pointer; white-space:nowrap; }
 
-        /* ── UPDATE-BANNER ── */
-        #updateBanner {
-            display: none;
-            position: fixed;
-            top: 0; left: 0; right: 0;
-            background: #2e7d32;
-            color: white;
-            padding: 12px 16px;
-            z-index: 99998;
-            font-size: 14px;
-            font-family: Arial, sans-serif;
-            align-items: center;
-            justify-content: space-between;
-            gap: 10px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
-        }
-        #updateBanner.aktiv { display: flex; }
-        #updateBanner button {
-            background: white; color: #2e7d32;
-            border: none; border-radius: 6px;
-            padding: 6px 14px; font-weight: bold;
-            font-size: 13px; cursor: pointer;
-            white-space: nowrap;
-        }
+        /* START-OVERLAY */
+        #startOverlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,.75); z-index:100000; align-items:center; justify-content:center; padding:16px; }
+        #startOverlay.aktiv { display:flex; }
+        #startOverlayBox { background:#fff; max-width:440px; width:100%; border-radius:16px; padding:24px 22px; box-shadow:0 8px 40px rgba(0,0,0,.4); }
+        #startOverlayBox h2 { margin:0 0 14px; font-size:19px; color:#004b7c; }
+        #startOverlayBox ul { margin:0 0 8px; padding-left:20px; font-size:14px; line-height:1.7; }
+        #startOverlayBox .mail { background:#eaeff5; padding:8px 12px; border-radius:8px; font-size:14px; margin:14px 0 18px; word-break:break-all; }
+        #startOverlayBox button { width:100%; padding:14px; background:#004b7c; color:#fff; border:none; border-radius:10px; font-size:16px; font-weight:bold; cursor:pointer; }
 
-        /* ── BUTTON-LEISTE ── */
-        .steuerungs-leiste-mobil {
-            position: fixed;
-            bottom: 0; left: 0; right: 0;
-            background-color: #f8f9fa !important;
-            border-top: 3px solid var(--accent-color) !important;
-            padding: 10px 12px;
-            display: flex !important;
-            justify-content: center !important;
-            z-index: 9999 !important;
-            box-shadow: 0 -3px 10px rgba(0,0,0,0.2);
-        }
-        .knopf-design {
-            font-size: 15px !important;
-            font-family: Arial, sans-serif !important;
-            font-weight: bold !important;
-            padding: 14px 32px !important;
-            cursor: pointer !important;
-            color: white !important;
-            border: 1px solid #222 !important;
-            border-radius: 10px !important;
-            text-align: center !important;
-            -webkit-appearance: none; appearance: none;
-            min-width: 200px;
-        }
+        /* BUTTON-LEISTE */
+        .steuerungs-leiste-mobil { position:fixed; bottom:0; left:0; right:0; background:#f8f9fa!important; border-top:3px solid var(--accent-color)!important; padding:10px 12px; display:flex!important; justify-content:center!important; z-index:9999!important; box-shadow:0 -3px 10px rgba(0,0,0,.2); }
+        .knopf-design { font-size:15px!important; font-family:Arial,sans-serif!important; font-weight:bold!important; padding:14px 32px!important; cursor:pointer!important; color:#fff!important; border:1px solid #222!important; border-radius:10px!important; text-align:center!important; -webkit-appearance:none; appearance:none; min-width:200px; }
 
-        /* ── AUTO-SAVE STATUS ── */
-        #saveStatus {
-            position: fixed; top: 10px; right: 10px;
-            font-size: 12px; font-weight: bold;
-            padding: 5px 11px; border-radius: 20px;
-            z-index: 10000;
-            transition: opacity 0.4s ease;
-            pointer-events: none; opacity: 0;
-        }
-        #saveStatus.saved  { background: #2e7d32; color: white; opacity: 1; }
-        #saveStatus.saving { background: #ef6c00; color: white; opacity: 1; }
+        /* AUTO-SAVE STATUS */
+        #saveStatus { position:fixed; top:10px; right:10px; font-size:12px; font-weight:bold; padding:5px 11px; border-radius:20px; z-index:10000; transition:opacity .4s; pointer-events:none; opacity:0; }
+        #saveStatus.saved { background:#2e7d32; color:#fff; opacity:1; }
+        #saveStatus.saving { background:#ef6c00; color:#fff; opacity:1; }
 
-        /* ── SCROLL-WRAPPER & PAGE ── */
-        .mobil-scroll-wrapper { width: 100%; overflow: visible; margin-bottom: 12px; background: white; }
-        .page {
-            width: 210mm; min-height: 297mm;
-            padding: 12mm 10mm 10mm 10mm;
-            background: white; margin: 0; text-align: left;
-            transform-origin: top left;
+        /* SEITE */
+        .mobil-scroll-wrapper { width:100%; overflow:visible; margin-bottom:12px; background:#fff; }
+        .page { width:210mm; min-height:297mm; padding:12mm 10mm 10mm; background:#fff; margin:0; text-align:left; }
+
+        .header { background:var(--header-bg-color)!important; padding:12px; border:1px solid #ccc; margin-bottom:16px; transition:background-color .3s; }
+        h1 { font-size:19px; margin:0 0 4px; text-transform:uppercase; letter-spacing:1px; }
+        h2 { font-size:15px; margin:0 0 12px; color:var(--accent-color); }
+        .meta-inputs { display:flex; gap:16px; margin-bottom:8px; flex-wrap:wrap; }
+        .meta-field { display:flex; align-items:center; gap:5px; }
+        .meta-field label { font-weight:bold; font-size:13px; white-space:nowrap; }
+        input[type="text"],input[type="month"],input[type="date"] { border:none; border-bottom:1px solid #333; background:transparent; font-size:14px; padding:2px; font-family:Arial,sans-serif; }
+        .name-field { font-size:14px; font-weight:bold; width:200px; }
+
+        table { width:100%; border-collapse:collapse; font-size:11px; min-width:680px; }
+        th,td { border:1px solid #666; padding:4px 3px; text-align:center; vertical-align:middle; }
+        th { background:#f9f9f9; font-weight:bold; }
+        .col-day { width:5%; font-weight:bold; }
+        .col-time { width:10%; }
+        .col-notes { width:50%; text-align:left; }
+        .notes-header { font-size:9px; text-align:left; font-weight:normal; line-height:1.3; background:var(--header-bg-color)!important; padding:5px!important; transition:background-color .3s; }
+        input.cell-input { width:100%; border:none; background:transparent; text-align:center; font-size:12px; -webkit-appearance:none; border-radius:0; padding:5px 0; min-height:28px; font-family:Arial,sans-serif; }
+        textarea.cell-input { width:100%; border:none; background:transparent; text-align:left; font-size:12px; padding:5px 4px; min-height:28px; line-height:1.3; resize:none; overflow:hidden; font-family:Arial,sans-serif; }
+        .weekend-row { background:var(--weekend-color)!important; }
+        .holiday-row { background:#ffe3e3!important; }
+        .holiday-row .col-day { text-decoration:underline; }
+        .feiertag-label { display:block; font-size:8px; color:#c0392b; font-weight:bold; text-align:left; padding:1px 4px 0; }
+
+        .footer-info { margin-top:12px; display:flex; justify-content:space-between; align-items:center; font-size:9px; color:#666; }
+        .footer-logo { display:flex; align-items:center; gap:6px; }
+        .footer-logo svg { width:22px; height:28px; flex-shrink:0; }
+        .page-break { page-break-before:always; margin-top:36px; border-top:2px dashed #ccc; padding-top:18px; }
+
+        .signature-container { margin-top:36px; display:flex; gap:24px; align-items:flex-end; flex-wrap:wrap; }
+        .sig-block { display:flex; flex-direction:column; gap:8px; }
+        .canvas-wrapper { position:relative; border-bottom:1px solid #333; width:280px; height:90px; background:#fafafa; }
+        canvas { width:280px; height:90px; cursor:crosshair; display:block; touch-action:none; }
+        .btn-clear-sig { position:absolute; right:0; top:-24px; background:#e0e0e0; border:1px solid #999; font-size:11px; padding:3px 7px; cursor:pointer; border-radius:4px; }
+
+        @media (min-width:815px) {
+            body { padding:20px; }
+            .steuerungs-leiste-mobil { position:static; width:210mm; margin:0 auto 16px; border:2px solid var(--accent-color)!important; border-radius:6px; }
+            #saveStatus { position:static; display:inline-block; margin-left:10px; vertical-align:middle; }
+            .mobil-scroll-wrapper { width:210mm; margin:0 auto; border:none; }
+            .page { box-shadow:0 0 10px rgba(0,0,0,.3); }
         }
 
-        /* ── HEADER ── */
-        .header {
-            background-color: var(--header-bg-color) !important;
-            padding: 12px; border: 1px solid #ccc;
-            margin-bottom: 16px;
-            transition: background-color 0.3s ease;
-        }
-        h1 { font-size: 19px; margin: 0 0 4px; text-transform: uppercase; letter-spacing: 1px; }
-        h2 { font-size: 15px; margin: 0 0 12px; color: var(--accent-color); }
-        .meta-inputs { display: flex; gap: 16px; margin-bottom: 8px; flex-wrap: wrap; }
-        .meta-field  { display: flex; align-items: center; gap: 5px; }
-        .meta-field label { font-weight: bold; font-size: 13px; white-space: nowrap; }
-        input[type="text"], input[type="month"], input[type="date"] {
-            border: none; border-bottom: 1px solid #333;
-            background: transparent; font-size: 14px;
-            padding: 2px; font-family: Arial, sans-serif;
-        }
-        .name-field { font-size: 14px; font-weight: bold; width: 200px; }
-
-        /* ── TABELLE ── */
-        table { width: 100%; border-collapse: collapse; font-size: 11px; min-width: 680px; }
-        th, td { border: 1px solid #666; padding: 4px 3px; text-align: center; }
-        th { background-color: #f9f9f9; font-weight: bold; }
-        .col-day  { width: 5%; font-weight: bold; }
-        .col-time { width: 10%; }
-        .col-notes { width: 50%; text-align: left; }
-        .notes-header {
-            font-size: 9px; text-align: left; font-weight: normal;
-            line-height: 1.3;
-            background-color: var(--header-bg-color) !important;
-            padding: 5px !important;
-            transition: background-color 0.3s ease;
-        }
-        input.cell-input {
-            width: 100%; border: none; background: transparent;
-            text-align: center; font-size: 12px;
-            -webkit-appearance: none; border-radius: 0;
-            padding: 5px 0; min-height: 28px;
-        }
-        input.cell-input-left { text-align: left; padding-left: 4px; }
-        .weekend-row { background-color: var(--weekend-color) !important; }
-        .holiday-row td { text-decoration: underline !important; font-weight: bold; }
-
-        /* ── FUSSZEILEN ── */
-        .footer-info {
-            margin-top: 12px; display: flex;
-            justify-content: space-between; font-size: 9px; color: #666;
-        }
-        .page-break { page-break-before: always; margin-top: 36px; border-top: 2px dashed #ccc; padding-top: 18px; }
-
-        /* ── UNTERSCHRIFT ── */
-        .signature-container { margin-top: 36px; display: flex; gap: 24px; align-items: flex-end; flex-wrap: wrap; }
-        .sig-block { display: flex; flex-direction: column; gap: 8px; }
-        .canvas-wrapper { position: relative; border-bottom: 1px solid #333; width: 280px; height: 90px; background: #fafafa; }
-        canvas { width: 280px; height: 90px; cursor: crosshair; display: block; touch-action: none; }
-        .btn-clear-sig {
-            position: absolute; right: 0; top: -24px;
-            background: #e0e0e0; border: 1px solid #999;
-            font-size: 11px; padding: 3px 7px; cursor: pointer; border-radius: 4px;
-        }
-
-        /* ── DESKTOP ── */
-        @media (min-width: 815px) {
-            body { padding: 20px; }
-            .steuerungs-leiste-mobil {
-                position: static; width: 210mm; margin: 0 auto 16px auto;
-                border: 2px solid var(--accent-color) !important; border-radius: 6px;
-            }
-            #saveStatus { position: static; display: inline-block; margin-left: 10px; vertical-align: middle; }
-            .mobil-scroll-wrapper { width: 210mm; margin: 0 auto; border: none; }
-            .page { box-shadow: 0 0 10px rgba(0,0,0,0.3); }
-        }
-
-        /* ── DRUCK ── */
         @media print {
-            body { margin: 0; padding: 0; background: white; }
-            .page { width: 100% !important; min-height: auto !important; padding: 0 !important; box-shadow: none !important; margin: 0 !important; transform: none !important; }
-            .page-break { border-top: none; }
-            input[type="text"], input[type="month"], input[type="date"], input.cell-input { border: none !important; }
-            .btn-clear-sig, .steuerungs-leiste-mobil, #saveStatus, #pdfModal, #updateBanner { display: none !important; }
-            .canvas-wrapper { border-bottom: none !important; background: transparent; }
+            body { margin:0; padding:0; background:#fff; }
+            .page { width:100%!important; min-height:auto!important; padding:0!important; box-shadow:none!important; margin:0!important; zoom:1!important; }
+            .page-break { border-top:none; }
+            input,textarea { border:none!important; }
+            .btn-clear-sig,.steuerungs-leiste-mobil,#saveStatus,#pdfModal,#updateBanner,#startOverlay { display:none!important; }
+            .canvas-wrapper { border-bottom:none!important; background:transparent; }
         }
 
-        /* ── PDF-MODAL ── */
-        #pdfModal {
-            display: none; position: fixed; inset: 0;
-            background: rgba(0,0,0,0.6); z-index: 99999;
-            align-items: flex-end; justify-content: center;
-        }
-        #pdfModal.aktiv { display: flex; }
-        #pdfModalBox {
-            background: white; width: 100%; max-width: 500px;
-            border-radius: 18px 18px 0 0; padding: 22px 20px 34px;
-            text-align: center; box-shadow: 0 -4px 24px rgba(0,0,0,0.25);
-        }
-        #pdfModalBox h3 { margin: 0 0 6px; font-size: 18px; color: #004b7c; }
-        #pdfModalBox p  { margin: 0 0 18px; font-size: 13px; color: #666; }
-        #btnJetztSenden {
-            width: 100%; padding: 15px; background: #004b7c; color: white;
-            border: none; border-radius: 12px; font-size: 17px; font-weight: bold;
-            font-family: Arial, sans-serif; cursor: pointer; margin-bottom: 10px;
-        }
-        #btnModalAbbrechen {
-            width: 100%; padding: 11px; background: transparent; color: #888;
-            border: none; font-size: 15px; font-family: Arial, sans-serif; cursor: pointer;
-        }
+        #pdfModal { display:none; position:fixed; inset:0; background:rgba(0,0,0,.6); z-index:99999; align-items:flex-end; justify-content:center; }
+        #pdfModal.aktiv { display:flex; }
+        #pdfModalBox { background:#fff; width:100%; max-width:500px; border-radius:18px 18px 0 0; padding:22px 20px 34px; text-align:center; box-shadow:0 -4px 24px rgba(0,0,0,.25); }
+        #pdfModalBox h3 { margin:0 0 6px; font-size:18px; color:#004b7c; }
+        #pdfModalBox p { margin:0 0 18px; font-size:13px; color:#666; }
+        #btnJetztSenden { width:100%; padding:15px; background:#004b7c; color:#fff; border:none; border-radius:12px; font-size:17px; font-weight:bold; cursor:pointer; margin-bottom:10px; }
+        #btnModalAbbrechen { width:100%; padding:11px; background:transparent; color:#888; border:none; font-size:15px; cursor:pointer; }
     </style>
 </head>
 <body>
 
+<!-- START-OVERLAY (Pflichthinweise) -->
+<div id="startOverlay">
+    <div id="startOverlayBox">
+        <h2>📋 Bindende Eingaben</h2>
+        <ul>
+            <li><strong>Vor-/Nachname</strong> – rechts oben</li>
+            <li><strong>KW</strong> (links unten): KW der ausgehändigten Dienstprotokolle aus dem <strong>Vormonat</strong> (siehe Protokolle links oben)</li>
+            <li><strong>Unterschrift</strong> und <strong>Datum</strong></li>
+        </ul>
+        <div class="mail">📧 Versenden an: <strong>Gabi.willner@ekhn.de</strong></div>
+        <button onclick="overlaySchliessen()">Verstanden</button>
+    </div>
+</div>
+
 <!-- UPDATE-BANNER -->
 <div id="updateBanner">
-    <span>🔄 Eine neue Version ist verfügbar.</span>
-    <button onclick="location.reload(true)">Jetzt aktualisieren</button>
+    <span>🔄 Neue Version verfügbar. Ihre Daten bleiben erhalten.</span>
+    <button onclick="location.reload(true)">Aktualisieren</button>
 </div>
 
 <div id="saveStatus">✓ Gespeichert</div>
 
 <div class="steuerungs-leiste-mobil" id="kontrollZentrum">
-    <!-- AUSGEBLENDET – triggerManualSave() / triggerManualLoad() im JS erhalten -->
-    <!-- <button type="button" class="knopf-design" style="background-color:#2e7d32;" onclick="triggerManualSave()">💾 Sichern</button> -->
-    <!-- <button type="button" class="knopf-design" style="background-color:#ef6c00;" onclick="triggerManualLoad()">🔄 Laden</button> -->
-    <button type="button" class="knopf-design" style="background-color:#004b7c;" onclick="speichernAlsPDF()">📤 Als PDF senden</button>
+    <!-- <button type="button" class="knopf-design" style="background:#2e7d32;" onclick="triggerManualSave()">💾 Sichern</button> -->
+    <!-- <button type="button" class="knopf-design" style="background:#ef6c00;" onclick="triggerManualLoad()">🔄 Laden</button> -->
+    <button type="button" class="knopf-design" style="background:#004b7c;" onclick="speichernAlsPDF()">📤 Als PDF senden</button>
 </div>
 
 <div class="mobil-scroll-wrapper" id="scrollWrapper">
@@ -255,8 +153,7 @@
                 </div>
                 <div class="meta-field" style="margin-left:auto;">
                     <label>Name:</label>
-                    <input type="text" id="nameInput" class="name-field"
-                           placeholder="Vorname Nachname" oninput="saveMetaFields()">
+                    <input type="text" id="nameInput" class="name-field" placeholder="Vorname Nachname" oninput="saveMetaFields()">
                 </div>
             </div>
         </div>
@@ -285,7 +182,10 @@
         </table>
 
         <div class="footer-info">
-            <div>Logo / Diakoniestation Gladenbach QMH Kap. 5.1.1</div>
+            <div class="footer-logo">
+                <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" style="width:26px;height:26px;flex-shrink:0;"><rect x="0" y="0" width="93" height="93" fill="#6b9fc4"/><rect x="107" y="0" width="93" height="93" fill="#6b9fc4"/><path d="M 6 93 A 41 41 0 0 1 88 93" fill="none" stroke="white" stroke-width="19" stroke-linecap="round"/><path d="M 112 93 A 41 41 0 0 1 194 93" fill="none" stroke="white" stroke-width="19" stroke-linecap="round"/><rect x="0" y="107" width="93" height="93" fill="#6b9fc4"/><rect x="107" y="107" width="93" height="93" fill="#6b9fc4"/></svg>
+                <span>Diakoniestation Gladenbach QMH Kap. 5.1.1</span>
+            </div>
             <div>F4 Vers.4 Nov.13</div>
             <div>Seite 1 von 2</div>
         </div>
@@ -303,7 +203,7 @@
 
         <div class="meta-field" style="margin-top:18px; font-size:14px;">
             <label><strong>KW:</strong></label>
-            <input type="text" id="kwInput" style="width:240px; font-weight:bold; border:none;" oninput="saveMetaFields()">
+            <input type="text" id="kwInput" style="width:240px; font-weight:bold; border-bottom:1px solid #333;" placeholder="z.B. 19+21" oninput="saveMetaFields()">
         </div>
 
         <div class="signature-container">
@@ -321,14 +221,16 @@
         </div>
 
         <div class="footer-info" style="margin-top:90px;">
-            <div>Logo / Diakoniestation Gladenbach QMH Kap. 5.1.1</div>
+            <div class="footer-logo">
+                <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" style="width:26px;height:26px;flex-shrink:0;"><rect x="0" y="0" width="93" height="93" fill="#6b9fc4"/><rect x="107" y="0" width="93" height="93" fill="#6b9fc4"/><path d="M 6 93 A 41 41 0 0 1 88 93" fill="none" stroke="white" stroke-width="19" stroke-linecap="round"/><path d="M 112 93 A 41 41 0 0 1 194 93" fill="none" stroke="white" stroke-width="19" stroke-linecap="round"/><rect x="0" y="107" width="93" height="93" fill="#6b9fc4"/><rect x="107" y="107" width="93" height="93" fill="#6b9fc4"/></svg>
+                <span>Diakoniestation Gladenbach QMH Kap. 5.1.1</span>
+            </div>
             <div>F4 Vers.4 Nov.13</div>
             <div>Seite 2 von 2</div>
         </div>
     </div>
 </div>
 
-<!-- PDF SENDEN MODAL -->
 <div id="pdfModal">
     <div id="pdfModalBox">
         <h3>✅ PDF ist bereit</h3>
@@ -339,430 +241,376 @@
 </div>
 
 <script>
-    /* ═══════════════════════════════════════════════════════════
-       AUTO-UPDATE
-       Prüft beim Start (und alle 5 Min.) ob die gehostete Datei
-       eine neuere APP-VERSION enthält als die aktuell geladene.
-       Wenn ja → grüner Update-Banner erscheint oben.
-    ═══════════════════════════════════════════════════════════ */
-    const AKTUELLE_VERSION = '2025-05-25-001';
+"use strict";
+/* ═══════════════════════════════════════════════════════════
+   AUTO-UPDATE  (Daten bleiben erhalten – localStorage wird NIE gelöscht)
+═══════════════════════════════════════════════════════════ */
+const AKTUELLE_VERSION = '2025-05-25-002';
+async function pruefeAufUpdate() {
+    if (!navigator.onLine || !location.protocol.startsWith('http')) return;
+    try {
+        const res = await fetch(location.href.split('?')[0] + '?v=' + Date.now(), { cache:'no-store' });
+        const txt = await res.text();
+        const m = txt.match(/APP-VERSION:\s*([\w-]+)/);
+        if (m && m[1] !== AKTUELLE_VERSION) document.getElementById('updateBanner').classList.add('aktiv');
+    } catch(e) {}
+}
+window.addEventListener('load', () => { pruefeAufUpdate(); setInterval(pruefeAufUpdate, 300000); });
 
-    async function pruefeAufUpdate() {
-        if (!navigator.onLine) return;
-        // Nur bei echtem HTTP(S)-Hosting prüfen, nicht bei file://
-        if (!location.protocol.startsWith('http')) return;
-        try {
-            const res  = await fetch(location.href + '?v=' + Date.now(), { cache: 'no-store' });
-            const text = await res.text();
-            const match = text.match(/APP-VERSION:\s*([\w-]+)/);
-            if (match && match[1] !== AKTUELLE_VERSION) {
-                document.getElementById('updateBanner').classList.add('aktiv');
-            }
-        } catch(e) { /* Offline oder Netzwerkfehler – ignorieren */ }
+/* ═══════════════════════════════════════════════════════════
+   KONFIGURATION
+═══════════════════════════════════════════════════════════ */
+const storagePrefix = "diakonie_local_";
+let autoSaveTimer = null;
+const monthColors = { 1:'#cce6ff',2:'#ffccd5',3:'#e8f5e9',4:'#fdfd96',5:'#f5f5f5',6:'#b3f0c2',7:'#ffb7ce',8:'#f4e7d3',9:'#ffd1a4',10:'#d7ccc8',11:'#dec4f4',12:'#ffb3b3' };
+const canvas = document.getElementById('sigCanvas');
+const ctx = canvas.getContext('2d');
+let isDrawing = false;
+
+/* ═══════════════════════════════════════════════════════════
+   VERSCHLÜSSELUNG  (AES-256-GCM, Web Crypto)
+   Daten werden verschlüsselt in localStorage abgelegt.
+═══════════════════════════════════════════════════════════ */
+let _cryptoKey = null;
+function bytesToB64(bytes){ let b=''; const c=0x8000; for(let i=0;i<bytes.length;i+=c) b+=String.fromCharCode.apply(null,bytes.subarray(i,i+c)); return btoa(b); }
+function b64ToBytes(s){ return Uint8Array.from(atob(s), ch=>ch.charCodeAt(0)); }
+
+async function getKey(){
+    if (_cryptoKey) return _cryptoKey;
+    if (!(window.crypto && crypto.subtle)) return null;
+    const stored = localStorage.getItem(storagePrefix + 'cryptokey');
+    if (stored){
+        _cryptoKey = await crypto.subtle.importKey('raw', b64ToBytes(stored), 'AES-GCM', false, ['encrypt','decrypt']);
+    } else {
+        _cryptoKey = await crypto.subtle.generateKey({name:'AES-GCM',length:256}, true, ['encrypt','decrypt']);
+        const raw = await crypto.subtle.exportKey('raw', _cryptoKey);
+        localStorage.setItem(storagePrefix + 'cryptokey', bytesToB64(new Uint8Array(raw)));
     }
+    return _cryptoKey;
+}
+async function verschluesseln(text){
+    const key = await getKey();
+    if (!key) return 'PLAIN:' + text;
+    const iv = crypto.getRandomValues(new Uint8Array(12));
+    const ct = await crypto.subtle.encrypt({name:'AES-GCM',iv}, key, new TextEncoder().encode(text));
+    const all = new Uint8Array(iv.length + ct.byteLength);
+    all.set(iv); all.set(new Uint8Array(ct), iv.length);
+    return 'ENC:' + bytesToB64(all);
+}
+async function entschluesseln(stored){
+    if (stored.startsWith('PLAIN:')) return stored.slice(6);
+    if (!stored.startsWith('ENC:'))  return stored;  // Alt-Daten im Klartext
+    const key = await getKey();
+    if (!key) throw new Error('Kein Schlüssel');
+    const all = b64ToBytes(stored.slice(4));
+    const pt = await crypto.subtle.decrypt({name:'AES-GCM', iv:all.slice(0,12)}, key, all.slice(12));
+    return new TextDecoder().decode(pt);
+}
 
-    // Beim Start prüfen, danach alle 5 Minuten
-    window.addEventListener('load', () => {
-        pruefeAufUpdate();
-        setInterval(pruefeAufUpdate, 5 * 60 * 1000);
-    });
+/* ═══════════════════════════════════════════════════════════
+   FEIERTAGE HESSEN  (inkl. beweglicher Feiertage via Osterformel)
+═══════════════════════════════════════════════════════════ */
+function berechneOstern(y){
+    const a=y%19,b=Math.floor(y/100),c=y%100,d=Math.floor(b/4),e=b%4,f=Math.floor((b+8)/25),g=Math.floor((b-f+1)/3),h=(19*a+b-d-g+15)%30,i=Math.floor(c/4),k=c%4,l=(32+2*e+2*i-h-k)%7,m=Math.floor((a+11*h+22*l)/451),mo=Math.floor((h+l-7*m+114)/31),da=((h+l-7*m+114)%31)+1;
+    return new Date(y, mo-1, da);
+}
+function plusTage(date,t){ const d=new Date(date); d.setDate(d.getDate()+t); return d; }
+function getFeiertageHessen(y){
+    const o = berechneOstern(y); const f = {};
+    const add=(d,n)=>{ f[(d.getMonth()+1)+'-'+d.getDate()] = n; };
+    add(new Date(y,0,1),'Neujahr');
+    add(plusTage(o,-2),'Karfreitag');
+    add(plusTage(o,1),'Ostermontag');
+    add(new Date(y,4,1),'Tag der Arbeit');
+    add(plusTage(o,39),'Christi Himmelfahrt');
+    add(plusTage(o,50),'Pfingstmontag');
+    add(plusTage(o,60),'Fronleichnam');
+    add(new Date(y,9,3),'Tag der Dt. Einheit');
+    add(new Date(y,11,25),'1. Weihnachtstag');
+    add(new Date(y,11,26),'2. Weihnachtstag');
+    return f;
+}
 
-    /* ═══════════════════════════════════════════════════════════
-       KONFIGURATION
-    ═══════════════════════════════════════════════════════════ */
-    const storagePrefix = "diakonie_local_";
-    let autoSaveTimer = null;
-    let currentMonth  = "";
+/* ═══════════════════════════════════════════════════════════
+   SMARTPHONE-SKALIERUNG  (zoom-basiert + stabil bei Drehung)
+   Nutzt CSS-zoom (kein transform) → kein Zurückspringen bei
+   Pinch-Zoom / Querformat. Reagiert nur auf echte Resizes
+   und orientationchange, nicht auf visuelles Pinch-Zoom.
+═══════════════════════════════════════════════════════════ */
+const PAGE_WIDTH_PX = 794;
+let _letzteBreite = 0;
+function skaliereFuerSmartphone(){
+    const page = document.getElementById('pdfArea');
+    const vw = document.documentElement.clientWidth;
+    if (vw === _letzteBreite) return;   // keine echte Änderung → ignorieren
+    _letzteBreite = vw;
+    page.style.zoom = (vw < 815) ? (vw / PAGE_WIDTH_PX).toFixed(4) : '';
+}
+let resizeTimer = null;
+window.addEventListener('resize', () => { clearTimeout(resizeTimer); resizeTimer = setTimeout(skaliereFuerSmartphone, 150); });
+window.addEventListener('orientationchange', () => { _letzteBreite = 0; setTimeout(skaliereFuerSmartphone, 350); });
 
-    const monthColors = {
-        1:'#cce6ff', 2:'#ffccd5', 3:'#e8f5e9', 4:'#fdfd96',
-        5:'#f5f5f5', 6:'#b3f0c2', 7:'#ffb7ce', 8:'#f4e7d3',
-        9:'#ffd1a4', 10:'#d7ccc8', 11:'#dec4f4', 12:'#ffb3b3'
+/* ═══════════════════════════════════════════════════════════
+   CANVAS
+═══════════════════════════════════════════════════════════ */
+function initCanvas(){ if(!canvas) return; ctx.strokeStyle='#000'; ctx.lineWidth=2.5; ctx.lineCap='round'; ctx.lineJoin='round'; }
+
+/* ═══════════════════════════════════════════════════════════
+   ZEITEINGABE  ("600" → 06:00, "1430" → 14:30)
+═══════════════════════════════════════════════════════════ */
+function cleanTime(input){ input.value = input.value.replace(/[^0-9:]/g,'').substring(0,5); }
+function handleTimeBlur(input){
+    let v = input.value.replace(/\D/g,'');
+    if (v.length === 0){ scheduleAutoSave(); return; }
+    let h, m;
+    if (v.length <= 2)      { h = parseInt(v,10); m = 0; }
+    else if (v.length === 3){ h = parseInt(v.substring(0,1),10); m = parseInt(v.substring(1,3),10); }
+    else                    { h = parseInt(v.substring(0,2),10); m = parseInt(v.substring(2,4),10); }
+    if (h>23) h=23; if (m>59) m=59;
+    input.value = String(h).padStart(2,'0') + ':' + String(m).padStart(2,'0');
+    scheduleAutoSave();
+}
+
+/* ═══════════════════════════════════════════════════════════
+   BEMERKUNG (Textarea): Tab = Zeilenumbruch, Kurzkommandos
+═══════════════════════════════════════════════════════════ */
+function autoGrow(ta){ ta.style.height='auto'; ta.style.height=(ta.scrollHeight)+'px'; }
+function bemerkungKeydown(e, ta){
+    if (e.key === 'Tab'){
+        e.preventDefault();
+        const s=ta.selectionStart, en=ta.selectionEnd;
+        ta.value = ta.value.slice(0,s) + '\n' + ta.value.slice(en);
+        ta.selectionStart = ta.selectionEnd = s+1;
+        autoGrow(ta); scheduleAutoSave();
+    }
+}
+function autoExpandNote(ta){
+    const map={k:'Krank',u:'Urlaub',f:'Fortbildung',db:'Dienstbesprechung',p:'Pause'};
+    const t=ta.value.trim().toLowerCase();
+    if (map[t]) ta.value = map[t];
+    autoGrow(ta); scheduleAutoSave();
+}
+
+/* ═══════════════════════════════════════════════════════════
+   AUTO-SAVE (Debounce 600ms)
+═══════════════════════════════════════════════════════════ */
+function scheduleAutoSave(){
+    showSaveStatus('saving');
+    if (autoSaveTimer) clearTimeout(autoSaveTimer);
+    autoSaveTimer = setTimeout(async () => { await saveTableData(); showSaveStatus('saved'); }, 600);
+}
+let statusFadeTimer=null;
+function showSaveStatus(state){
+    const el=document.getElementById('saveStatus'); if(!el) return;
+    el.className=state; el.textContent = state==='saving' ? '⏳ Speichert...' : '✓ Gespeichert';
+    if (state==='saved'){ if(statusFadeTimer)clearTimeout(statusFadeTimer); statusFadeTimer=setTimeout(()=>{el.style.opacity='0';setTimeout(()=>{el.className='';},500);},2000); }
+}
+
+function isCanvasEmpty(cv){ const b=document.createElement('canvas'); b.width=cv.width; b.height=cv.height; return cv.toDataURL()===b.toDataURL(); }
+function triggerManualSave(){ saveTableData(); alert("💾 Daten gesichert!"); }
+function triggerManualLoad(){ loadTableData(); alert("🔄 Daten geladen."); }
+function saveMetaFields(){ scheduleAutoSave(); }
+
+/* ═══════════════════════════════════════════════════════════
+   SPEICHERN (verschlüsselt)
+═══════════════════════════════════════════════════════════ */
+async function saveTableData(){
+    const mv = document.getElementById('monthInput').value; if(!mv) return;
+    const cells = {};
+    document.querySelectorAll('#tableBody input, #tableBody textarea').forEach(el => { if(el.value!=='') cells[el.id]=el.value; });
+    const payload = {
+        username: document.getElementById('nameInput').value,
+        kwInput:  document.getElementById('kwInput').value,
+        sigDate:  document.getElementById('sigDate').value,
+        signatureImg: isCanvasEmpty(canvas) ? '' : canvas.toDataURL(),
+        cells, savedAt: new Date().toISOString()
     };
+    try {
+        const enc = await verschluesseln(JSON.stringify(payload));
+        localStorage.setItem(storagePrefix+'data_'+mv, enc);
+        localStorage.setItem(storagePrefix+'last_active_month', mv);
+        if (payload.username) localStorage.setItem(storagePrefix+'global_username', payload.username);
+    } catch(e){ console.warn('Speicherfehler:', e); }
+}
 
-    const canvas = document.getElementById('sigCanvas');
-    const ctx    = canvas.getContext('2d');
-    let isDrawing = false;
-
-    /* ═══════════════════════════════════════════════════════════
-       SMARTPHONE-SKALIERUNG
-    ═══════════════════════════════════════════════════════════ */
-    const PAGE_WIDTH_PX = 794;
-
-    function skaliereFuerSmartphone() {
-        const page    = document.getElementById('pdfArea');
-        const wrapper = document.getElementById('scrollWrapper');
-        const vw      = window.innerWidth;
-        if (vw < 815) {
-            const skala = vw / PAGE_WIDTH_PX;
-            page.style.transform       = 'scale(' + skala + ')';
-            page.style.transformOrigin = 'top left';
-            wrapper.style.height   = (page.offsetHeight * skala) + 'px';
-            wrapper.style.overflow = 'hidden';
-        } else {
-            page.style.transform = '';
-            page.style.transformOrigin = '';
-            wrapper.style.height   = '';
-            wrapper.style.overflow = 'visible';
-        }
+/* ═══════════════════════════════════════════════════════════
+   LADEN (entschlüsselt)
+═══════════════════════════════════════════════════════════ */
+async function loadTableData(){
+    const mv = document.getElementById('monthInput').value; if(!mv) return;
+    let raw; try { raw = localStorage.getItem(storagePrefix+'data_'+mv); } catch(e){ return; }
+    if (!raw){
+        const gn = localStorage.getItem(storagePrefix+'global_username');
+        if (gn && !document.getElementById('nameInput').value) document.getElementById('nameInput').value = gn;
+        return;
     }
-    window.addEventListener('resize', skaliereFuerSmartphone);
-
-    /* ═══════════════════════════════════════════════════════════
-       CANVAS INITIALISIERUNG
-    ═══════════════════════════════════════════════════════════ */
-    function initCanvas() {
-        if (!canvas) return;
-        ctx.strokeStyle = '#000000';
-        ctx.lineWidth   = 2.5;
-        ctx.lineCap     = 'round';
-        ctx.lineJoin    = 'round';
+    let p;
+    try { p = JSON.parse(await entschluesseln(raw)); } catch(e){ console.warn('Ladefehler:', e); return; }
+    if (p.username) document.getElementById('nameInput').value = p.username;
+    if (p.kwInput)  { const kw=document.getElementById('kwInput'); if(kw) kw.value=p.kwInput; }
+    if (p.sigDate)  document.getElementById('sigDate').value = p.sigDate;
+    if (p.signatureImg && p.signatureImg.length>100){
+        const img=new Image(); img.onload=()=>{ ctx.clearRect(0,0,canvas.width,canvas.height); ctx.drawImage(img,0,0); }; img.src=p.signatureImg;
     }
+    if (p.cells) Object.keys(p.cells).forEach(id => { const el=document.getElementById(id); if(el){ el.value=p.cells[id]; if(el.tagName==='TEXTAREA') autoGrow(el); } });
+}
 
-    /* ═══════════════════════════════════════════════════════════
-       ZEITFELDER
-    ═══════════════════════════════════════════════════════════ */
-    function formatTimeInput(input) {
-        let v = input.value.replace(/\D/g, '');
-        if (v.length > 2) input.value = v.substring(0,2) + ':' + v.substring(2,4);
-        else input.value = v;
-    }
+/* ═══════════════════════════════════════════════════════════
+   KW (ISO 8601)
+═══════════════════════════════════════════════════════════ */
+function getISOWeek(date){ const d=new Date(Date.UTC(date.getFullYear(),date.getMonth(),date.getDate())); const day=d.getUTCDay()||7; d.setUTCDate(d.getUTCDate()+4-day); const ys=new Date(Date.UTC(d.getUTCFullYear(),0,1)); return Math.ceil((((d-ys)/86400000)+1)/7); }
 
-    function handleTimeBlur(input) {
-        let v = input.value.replace(/\D/g, '');
-        if (v.length === 4) {
-            let h = Math.min(parseInt(v.substring(0,2),10), 23);
-            let m = Math.min(parseInt(v.substring(2,4),10), 59);
-            input.value = String(h).padStart(2,'0') + ':' + String(m).padStart(2,'0');
-        } else if (v.length > 0) {
-            input.value = String(Math.min(parseInt(v,10),23)).padStart(2,'0') + ':00';
-        }
-        scheduleAutoSave();
-    }
+/* ═══════════════════════════════════════════════════════════
+   MONATSWECHSEL
+═══════════════════════════════════════════════════════════ */
+function handleMonthChangeTrigger(){ handleMonthUpdate(true); }
 
-    /* ═══════════════════════════════════════════════════════════
-       BEMERKUNGEN – KURZKOMMANDOS
-    ═══════════════════════════════════════════════════════════ */
-    function autoExpandNote(input) {
-        const t = input.value.trim().toLowerCase();
-        const map = { k:'Krank', u:'Urlaub', f:'Fortbildung', db:'Dienstbesprechung', p:'Pause' };
-        if (map[t]) input.value = map[t];
-        scheduleAutoSave();
-    }
+async function handleMonthUpdate(isManualChange){
+    const mi=document.getElementById('monthInput'); if(!mi||!mi.value) return;
+    const [year, mNum] = mi.value.split('-').map(n=>parseInt(n,10));
+    const mIdx = mNum-1;
 
-    /* ═══════════════════════════════════════════════════════════
-       AUTO-SAVE (Debounce 600ms)
-    ═══════════════════════════════════════════════════════════ */
-    function scheduleAutoSave() {
-        showSaveStatus('saving');
-        if (autoSaveTimer) clearTimeout(autoSaveTimer);
-        autoSaveTimer = setTimeout(() => { saveTableData(); showSaveStatus('saved'); }, 600);
+    const color = monthColors[mNum] || '#f5f5f5';
+    document.documentElement.style.setProperty('--header-bg-color', color);
+    ['mainHeader1','mainHeader2','tableNotesHeader'].forEach(id=>{ const el=document.getElementById(id); if(el) el.style.backgroundColor=color; });
+
+    const firstDay=new Date(year,mIdx,1), lastDay=new Date(year,mIdx+1,0), daysInMonth=lastDay.getDate();
+    const startKW=getISOWeek(firstDay), endKW=getISOWeek(lastDay);
+    const feiertage = getFeiertageHessen(year);
+
+    const tbody=document.getElementById('tableBody'); tbody.innerHTML='';
+    for (let i=1;i<=daysInMonth;i++){
+        const dow=new Date(year,mIdx,i).getDay();
+        const ftName = feiertage[mNum+'-'+i];
+        const tr=document.createElement('tr');
+        const cls=[]; if(dow===0||dow===6) cls.push('weekend-row'); if(ftName) cls.push('holiday-row');
+        if(cls.length) tr.className=cls.join(' ');
+        const ftLabel = ftName ? `<span class="feiertag-label">🔴 ${ftName}</span>` : '';
+        tr.innerHTML = `
+            <td class="col-day">${String(i).padStart(2,'0')}</td>
+            <td><input type="text" inputmode="numeric" class="cell-input" id="cell-${i}-frueh-von" oninput="cleanTime(this);scheduleAutoSave();" onblur="handleTimeBlur(this)" placeholder="--:--"></td>
+            <td><input type="text" inputmode="numeric" class="cell-input" id="cell-${i}-frueh-bis" oninput="cleanTime(this);scheduleAutoSave();" onblur="handleTimeBlur(this)" placeholder="--:--"></td>
+            <td><input type="text" inputmode="numeric" class="cell-input" id="cell-${i}-spaet-von" oninput="cleanTime(this);scheduleAutoSave();" onblur="handleTimeBlur(this)" placeholder="--:--"></td>
+            <td><input type="text" inputmode="numeric" class="cell-input" id="cell-${i}-spaet-bis" oninput="cleanTime(this);scheduleAutoSave();" onblur="handleTimeBlur(this)" placeholder="--:--"></td>
+            <td>${ftLabel}<textarea rows="1" class="cell-input" id="cell-${i}-bemerkung" oninput="autoGrow(this);scheduleAutoSave();" onkeydown="bemerkungKeydown(event,this)" onblur="autoExpandNote(this)"></textarea></td>`;
+        tbody.appendChild(tr);
     }
 
-    let statusFadeTimer = null;
-    function showSaveStatus(state) {
-        const el = document.getElementById('saveStatus');
-        if (!el) return;
-        el.className  = state;
-        el.textContent = state === 'saving' ? '⏳ Speichert...' : '✓ Gespeichert';
-        if (state === 'saved') {
-            if (statusFadeTimer) clearTimeout(statusFadeTimer);
-            statusFadeTimer = setTimeout(() => {
-                el.style.opacity = '0';
-                setTimeout(() => { el.className = ''; }, 500);
-            }, 2000);
-        }
+    const kwEl=document.getElementById('kwInput');
+
+    await loadTableData();
+
+    // Datum bei Monatswechsel zurücksetzen (korrektes Datum sicherstellen)
+    if (isManualChange){
+        document.getElementById('sigDate').value = '';
+        // KW-Feld bei manuellem Wechsel leeren falls noch Standardwert – Nutzer trägt Vormonats-KW ein
+        if (kwEl && /^KW /.test(kwEl.value)) kwEl.value = '';
     }
+    // Vorschlag nur wenn leer
+    if (kwEl && !kwEl.value) kwEl.placeholder = `Vormonat – z.B. KW ${startKW}-${endKW}`;
 
-    /* ═══════════════════════════════════════════════════════════
-       CANVAS: LEER-PRÜFUNG
-    ═══════════════════════════════════════════════════════════ */
-    function isCanvasEmpty(cv) {
-        const b = document.createElement('canvas');
-        b.width = cv.width; b.height = cv.height;
-        return cv.toDataURL() === b.toDataURL();
-    }
+    _letzteBreite = 0;
+    requestAnimationFrame(skaliereFuerSmartphone);
+}
 
-    /* ═══════════════════════════════════════════════════════════
-       MANUELLE BUTTONS (versteckt, Funktion erhalten)
-    ═══════════════════════════════════════════════════════════ */
-    function triggerManualSave() { saveTableData(); alert("💾 Daten erfolgreich gesichert!"); }
-    function triggerManualLoad() { loadTableData(); alert("🔄 Letzte gespeicherte Daten geladen."); }
-    function saveMetaFields()    { scheduleAutoSave(); }
+/* ═══════════════════════════════════════════════════════════
+   APP-INIT
+═══════════════════════════════════════════════════════════ */
+async function loadMonthDataset(){
+    const last = localStorage.getItem(storagePrefix+'last_active_month');
+    const now=new Date();
+    document.getElementById('monthInput').value = last || `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+    const gn = localStorage.getItem(storagePrefix+'global_username');
+    if (gn) document.getElementById('nameInput').value = gn;
+    await handleMonthUpdate(false);
+}
 
-    /* ═══════════════════════════════════════════════════════════
-       SPEICHERN
-    ═══════════════════════════════════════════════════════════ */
-    function saveTableData() {
-        const mv = document.getElementById('monthInput').value;
-        if (!mv) return;
-        const cells = {};
-        document.querySelectorAll('#tableBody input').forEach(inp => {
-            if (inp.value !== '') cells[inp.id] = inp.value;
-        });
-        const payload = {
-            username: document.getElementById('nameInput').value,
-            kwInput:  document.getElementById('kwInput').value,
-            sigDate:  document.getElementById('sigDate').value,
-            signatureImg: isCanvasEmpty(canvas) ? '' : canvas.toDataURL(),
-            cells, savedAt: new Date().toISOString()
-        };
-        try {
-            localStorage.setItem(storagePrefix + 'data_' + mv, JSON.stringify(payload));
-            localStorage.setItem(storagePrefix + 'last_active_month', mv);
-            if (payload.username) localStorage.setItem(storagePrefix + 'global_username', payload.username);
-        } catch(e) { console.warn('localStorage Fehler:', e); }
-    }
+/* ═══════════════════════════════════════════════════════════
+   START-OVERLAY
+═══════════════════════════════════════════════════════════ */
+function overlaySchliessen(){ document.getElementById('startOverlay').classList.remove('aktiv'); }
 
-    /* ═══════════════════════════════════════════════════════════
-       LADEN
-    ═══════════════════════════════════════════════════════════ */
-    function loadTableData() {
-        const mv = document.getElementById('monthInput').value;
-        if (!mv) return;
-        let raw;
-        try { raw = localStorage.getItem(storagePrefix + 'data_' + mv); } catch(e) { return; }
-        if (!raw) {
-            const gn = localStorage.getItem(storagePrefix + 'global_username');
-            if (gn && !document.getElementById('nameInput').value)
-                document.getElementById('nameInput').value = gn;
-            return;
-        }
-        let p; try { p = JSON.parse(raw); } catch(e) { return; }
-        if (p.username) document.getElementById('nameInput').value = p.username;
-        if (p.kwInput)  { const kw = document.getElementById('kwInput'); if(kw) kw.value = p.kwInput; }
-        if (p.sigDate)  document.getElementById('sigDate').value = p.sigDate;
-        if (p.signatureImg && p.signatureImg.length > 100) {
-            const img = new Image();
-            img.onload = () => { ctx.clearRect(0,0,canvas.width,canvas.height); ctx.drawImage(img,0,0); };
-            img.src = p.signatureImg;
-        }
-        if (p.cells) Object.keys(p.cells).forEach(id => {
-            const el = document.getElementById(id);
-            if (el) el.value = p.cells[id];
-        });
-    }
+/* ═══════════════════════════════════════════════════════════
+   PDF SENDEN (Zwei-Schritt: async render → sync share)
+═══════════════════════════════════════════════════════════ */
+let _bereitesBlob=null, _bereiterFilename='';
+function speichernAlsPDF(){
+    const leiste=document.getElementById('kontrollZentrum'), status=document.getElementById('saveStatus');
+    const name=document.getElementById('nameInput').value.trim()||'Mitarbeiter';
+    const mj=document.getElementById('monthInput').value||'Monat';
+    _bereiterFilename=`Arbeitszeitnachweis_${name}_${mj}.pdf`; _bereitesBlob=null;
+    const wieder=()=>{ if(leiste)leiste.style.setProperty('display','flex','important'); if(status)status.style.display=''; };
 
-    /* ═══════════════════════════════════════════════════════════
-       KW-BERECHNUNG (ISO 8601)
-    ═══════════════════════════════════════════════════════════ */
-    function getISOWeek(date) {
-        const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
-        const day = d.getUTCDay() || 7;
-        d.setUTCDate(d.getUTCDate() + 4 - day);
-        const ys = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
-        return Math.ceil((((d - ys) / 86400000) + 1) / 7);
-    }
+    if (!window.html2canvas || !window.jspdf){ wieder(); try{window.print();}catch(e){ alert('ℹ️ Bitte in Safari öffnen: Teilen → „In Dateien sichern".'); } return; }
 
-    /* ═══════════════════════════════════════════════════════════
-       MONATSWECHSEL
-    ═══════════════════════════════════════════════════════════ */
-    function handleMonthChangeTrigger() { handleMonthUpdate(true); }
+    const btn=document.querySelector('#kontrollZentrum .knopf-design');
+    if(btn){ btn.textContent='⏳ Wird erstellt…'; btn.disabled=true; }
 
-    function handleMonthUpdate(isManualChange = false) {
-        const mi = document.getElementById('monthInput');
-        if (!mi || !mi.value) return;
-        currentMonth = mi.value;
-        const parts = mi.value.split('-');
-        const year  = parseInt(parts[0], 10);
-        const mNum  = parseInt(parts[1], 10);
-        const mIdx  = mNum - 1;
+    const page=document.getElementById('pdfArea');
+    const prevZoom=page.style.zoom;
+    page.style.zoom='';   // volle Auflösung fürs PDF
 
-        const color = monthColors[mNum] || '#f5f5f5';
-        document.documentElement.style.setProperty('--header-bg-color', color);
-        ['mainHeader1','mainHeader2'].forEach(id => {
-            const el = document.getElementById(id);
-            if (el) el.style.backgroundColor = color;
-        });
-        const nh = document.getElementById('tableNotesHeader');
-        if (nh) nh.style.backgroundColor = color;
+    if(leiste)leiste.style.setProperty('display','none','important');
+    if(status)status.style.display='none';
 
-        const firstDay    = new Date(year, mIdx, 1);
-        const lastDay     = new Date(year, mIdx + 1, 0);
-        const daysInMonth = lastDay.getDate();
-        const startKW     = getISOWeek(firstDay);
-        const endKW       = getISOWeek(lastDay);
-
-        const tbody = document.getElementById('tableBody');
-        tbody.innerHTML = '';
-        for (let i = 1; i <= daysInMonth; i++) {
-            const dow = new Date(year, mIdx, i).getDay();
-            const tr  = document.createElement('tr');
-            if (dow === 0 || dow === 6) tr.className = 'weekend-row';
-            tr.innerHTML = `
-                <td class="col-day">${String(i).padStart(2,'0')}</td>
-                <td><input type="text" inputmode="numeric" class="cell-input" id="cell-${i}-frueh-von"
-                     oninput="formatTimeInput(this);scheduleAutoSave();" onblur="handleTimeBlur(this)" placeholder="--:--"></td>
-                <td><input type="text" inputmode="numeric" class="cell-input" id="cell-${i}-frueh-bis"
-                     oninput="formatTimeInput(this);scheduleAutoSave();" onblur="handleTimeBlur(this)" placeholder="--:--"></td>
-                <td><input type="text" inputmode="numeric" class="cell-input" id="cell-${i}-spaet-von"
-                     oninput="formatTimeInput(this);scheduleAutoSave();" onblur="handleTimeBlur(this)" placeholder="--:--"></td>
-                <td><input type="text" inputmode="numeric" class="cell-input" id="cell-${i}-spaet-bis"
-                     oninput="formatTimeInput(this);scheduleAutoSave();" onblur="handleTimeBlur(this)" placeholder="--:--"></td>
-                <td><input type="text" class="cell-input cell-input-left" id="cell-${i}-bemerkung"
-                     oninput="scheduleAutoSave();" onblur="autoExpandNote(this)"></td>`;
-            tbody.appendChild(tr);
-        }
-
-        const kwEl = document.getElementById('kwInput');
-        if (kwEl) kwEl.value = `KW ${startKW}-${endKW} / ${year}`;
-
-        loadTableData();
-        requestAnimationFrame(skaliereFuerSmartphone);
-    }
-
-    /* ═══════════════════════════════════════════════════════════
-       APP-INIT
-    ═══════════════════════════════════════════════════════════ */
-    function loadMonthDataset() {
-        const last = localStorage.getItem(storagePrefix + 'last_active_month');
-        const now  = new Date();
-        document.getElementById('monthInput').value = last ||
-            `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
-        const gn = localStorage.getItem(storagePrefix + 'global_username');
-        if (gn) document.getElementById('nameInput').value = gn;
-        handleMonthUpdate(false);
-    }
-
-    /* ═══════════════════════════════════════════════════════════
-       PDF SENDEN – Zwei-Schritt (async render → sync share)
-    ═══════════════════════════════════════════════════════════ */
-    let _bereitesBlob = null, _bereiterFilename = '';
-
-    function speichernAlsPDF() {
-        const leiste = document.getElementById('kontrollZentrum');
-        const status = document.getElementById('saveStatus');
-        const name   = document.getElementById('nameInput').value.trim() || 'Mitarbeiter';
-        const mj     = document.getElementById('monthInput').value || 'Monat';
-        _bereiterFilename = `Arbeitszeitnachweis_${name}_${mj}.pdf`;
-        _bereitesBlob     = null;
-
-        function wiederherstellenUI() {
-            if (leiste) leiste.style.setProperty('display', 'flex', 'important');
-            if (status) status.style.display = '';
-        }
-
-        if (!window.html2canvas || !window.jspdf) {
-            wiederherstellenUI();
-            try { window.print(); } catch(e) {
-                alert('ℹ️ Bitte in Safari öffnen:\nTeilen → „In Dateien sichern".');
-            }
-            return;
-        }
-
-        const btn = document.querySelector('#kontrollZentrum .knopf-design');
-        if (btn) { btn.textContent = '⏳ Wird erstellt…'; btn.disabled = true; }
-
-        // Skalierung für korrektes Rendering aufheben
-        const page    = document.getElementById('pdfArea');
-        const wrapper = document.getElementById('scrollWrapper');
-        const prevTF  = page.style.transform;
-        const prevTO  = page.style.transformOrigin;
-        const prevH   = wrapper.style.height;
-        const prevOV  = wrapper.style.overflow;
-        page.style.transform = 'none'; page.style.transformOrigin = '';
-        wrapper.style.height = ''; wrapper.style.overflow = 'visible';
-
-        if (leiste) leiste.style.setProperty('display', 'none', 'important');
-        if (status) status.style.display = 'none';
-
-        html2canvas(page, { scale: 2, useCORS: true, allowTaint: true })
-        .then(function(co) {
-            // Skalierung wiederherstellen
-            page.style.transform = prevTF; page.style.transformOrigin = prevTO;
-            wrapper.style.height = prevH;  wrapper.style.overflow = prevOV;
-
-            const imgData = co.toDataURL('image/jpeg', 0.92);
-            const jsPDF   = window.jspdf.jsPDF;
-            const pdf     = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
-            const pdfW    = pdf.internal.pageSize.getWidth();
-            const pdfH    = (co.height * pdfW) / co.width;
-            const pageH   = pdf.internal.pageSize.getHeight();
-            let posY = 0;
-            while (posY < pdfH) {
-                if (posY > 0) pdf.addPage();
-                pdf.addImage(imgData, 'JPEG', 0, -posY, pdfW, pdfH);
-                posY += pageH;
-            }
-            _bereitesBlob = pdf.output('blob');
-            wiederherstellenUI();
-            if (btn) { btn.textContent = '📤 Als PDF senden'; btn.disabled = false; }
-            const el = document.getElementById('pdfModalDateiname');
-            if (el) el.textContent = _bereiterFilename;
-            document.getElementById('pdfModal').classList.add('aktiv');
-        })
-        .catch(function(e) {
-            page.style.transform = prevTF; page.style.transformOrigin = prevTO;
-            wrapper.style.height = prevH;  wrapper.style.overflow = prevOV;
-            wiederherstellenUI();
-            if (btn) { btn.textContent = '📤 Als PDF senden'; btn.disabled = false; }
-            alert('❌ Fehler:\n' + (e.message || e));
-        });
-    }
-
-    function jetzt_teilen_synchron() {
-        if (!_bereitesBlob) { alert('❌ Kein PDF bereit.'); return; }
-        const file = new File([_bereitesBlob], _bereiterFilename, { type: 'application/pdf' });
-        if (navigator.canShare && navigator.canShare({ files: [file] })) {
-            navigator.share({ files: [file], title: 'Arbeitszeitnachweis' })
-                .then(() => modalSchliessen())
-                .catch(e => { if (e.name !== 'AbortError') direktDownload(); });
-            return;
-        }
-        if (navigator.share) {
-            navigator.share({ title: 'Arbeitszeitnachweis', text: _bereiterFilename })
-                .then(() => direktDownload()).catch(() => direktDownload());
-            return;
-        }
-        direktDownload();
-    }
-
-    function direktDownload() {
-        const url  = URL.createObjectURL(_bereitesBlob);
-        const link = document.createElement('a');
-        link.href = url; link.download = _bereiterFilename;
-        document.body.appendChild(link); link.click(); document.body.removeChild(link);
-        setTimeout(() => URL.revokeObjectURL(url), 5000);
-        modalSchliessen();
-    }
-
-    function modalSchliessen() { document.getElementById('pdfModal').classList.remove('aktiv'); }
-    function sendeNachweis()           { speichernAlsPDF(); }
-    function saveAsPDFNativeDownload() { speichernAlsPDF(); }
-
-    /* ═══════════════════════════════════════════════════════════
-       UNTERSCHRIFT ZEICHNEN
-    ═══════════════════════════════════════════════════════════ */
-    function getPos(e) {
-        const rect = canvas.getBoundingClientRect();
-        const sx = canvas.width / rect.width, sy = canvas.height / rect.height;
-        let cx, cy;
-        if (e.touches && e.touches.length > 0) { cx = e.touches[0].clientX; cy = e.touches[0].clientY; }
-        else { cx = e.clientX; cy = e.clientY; }
-        return { x: (cx - rect.left) * sx, y: (cy - rect.top) * sy };
-    }
-    function startDraw(e) { isDrawing = true; const p = getPos(e); ctx.beginPath(); ctx.moveTo(p.x,p.y); if(e.touches) e.preventDefault(); }
-    function draw(e)      { if (!isDrawing) return; const p = getPos(e); ctx.lineTo(p.x,p.y); ctx.stroke(); if(e.touches) e.preventDefault(); }
-    function stopDraw()   { if (isDrawing) { isDrawing = false; scheduleAutoSave(); } }
-    function clearSignature() { ctx.clearRect(0,0,canvas.width,canvas.height); scheduleAutoSave(); }
-
-    if (canvas) {
-        canvas.addEventListener('mousedown', startDraw);
-        canvas.addEventListener('mousemove', draw);
-        window.addEventListener('mouseup', stopDraw);
-        canvas.addEventListener('touchstart', startDraw, { passive: false });
-        canvas.addEventListener('touchmove',  draw,      { passive: false });
-        window.addEventListener('touchend',   stopDraw);
-    }
-
-    /* ═══════════════════════════════════════════════════════════
-       DOM READY
-    ═══════════════════════════════════════════════════════════ */
-    document.addEventListener("DOMContentLoaded", () => {
-        initCanvas();
-        loadMonthDataset();
+    html2canvas(page,{scale:2,useCORS:true,allowTaint:true}).then(co=>{
+        page.style.zoom=prevZoom;
+        const img=co.toDataURL('image/jpeg',0.92);
+        const jsPDF=window.jspdf.jsPDF;
+        const pdf=new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
+        const W=pdf.internal.pageSize.getWidth(), H=(co.height*W)/co.width, pageH=pdf.internal.pageSize.getHeight();
+        let y=0; while(y<H){ if(y>0)pdf.addPage(); pdf.addImage(img,'JPEG',0,-y,W,H); y+=pageH; }
+        _bereitesBlob=pdf.output('blob');
+        wieder(); if(btn){ btn.textContent='📤 Als PDF senden'; btn.disabled=false; }
+        const el=document.getElementById('pdfModalDateiname'); if(el) el.textContent=_bereiterFilename;
+        document.getElementById('pdfModal').classList.add('aktiv');
+    }).catch(e=>{
+        page.style.zoom=prevZoom; wieder(); if(btn){ btn.textContent='📤 Als PDF senden'; btn.disabled=false; }
+        alert('❌ Fehler:\n'+(e.message||e));
     });
+}
+function jetzt_teilen_synchron(){
+    if(!_bereitesBlob){ alert('❌ Kein PDF bereit.'); return; }
+    const file=new File([_bereitesBlob],_bereiterFilename,{type:'application/pdf'});
+    if(navigator.canShare && navigator.canShare({files:[file]})){
+        navigator.share({files:[file],title:'Arbeitszeitnachweis',text:'Bitte an Gabi.willner@ekhn.de'}).then(modalSchliessen).catch(e=>{ if(e.name!=='AbortError') direktDownload(); });
+        return;
+    }
+    if(navigator.share){ navigator.share({title:'Arbeitszeitnachweis',text:_bereiterFilename}).then(direktDownload).catch(direktDownload); return; }
+    direktDownload();
+}
+function direktDownload(){
+    const url=URL.createObjectURL(_bereitesBlob), a=document.createElement('a');
+    a.href=url; a.download=_bereiterFilename; document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    setTimeout(()=>URL.revokeObjectURL(url),5000); modalSchliessen();
+}
+function modalSchliessen(){ document.getElementById('pdfModal').classList.remove('aktiv'); }
+function sendeNachweis(){ speichernAlsPDF(); }
+function saveAsPDFNativeDownload(){ speichernAlsPDF(); }
+
+/* ═══════════════════════════════════════════════════════════
+   UNTERSCHRIFT
+═══════════════════════════════════════════════════════════ */
+function getPos(e){ const r=canvas.getBoundingClientRect(), sx=canvas.width/r.width, sy=canvas.height/r.height; let cx,cy; if(e.touches&&e.touches.length){cx=e.touches[0].clientX;cy=e.touches[0].clientY;}else{cx=e.clientX;cy=e.clientY;} return {x:(cx-r.left)*sx,y:(cy-r.top)*sy}; }
+function startDraw(e){ isDrawing=true; const p=getPos(e); ctx.beginPath(); ctx.moveTo(p.x,p.y); if(e.touches)e.preventDefault(); }
+function draw(e){ if(!isDrawing)return; const p=getPos(e); ctx.lineTo(p.x,p.y); ctx.stroke(); if(e.touches)e.preventDefault(); }
+function stopDraw(){ if(isDrawing){ isDrawing=false; scheduleAutoSave(); } }
+function clearSignature(){ ctx.clearRect(0,0,canvas.width,canvas.height); scheduleAutoSave(); }
+if(canvas){
+    canvas.addEventListener('mousedown',startDraw); canvas.addEventListener('mousemove',draw); window.addEventListener('mouseup',stopDraw);
+    canvas.addEventListener('touchstart',startDraw,{passive:false}); canvas.addEventListener('touchmove',draw,{passive:false}); window.addEventListener('touchend',stopDraw);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   DOM READY
+═══════════════════════════════════════════════════════════ */
+document.addEventListener("DOMContentLoaded", async () => {
+    initCanvas();
+    document.getElementById('startOverlay').classList.add('aktiv');  // Pflichthinweis bei Start
+    await loadMonthDataset();
+});
 </script>
 
 </body>
+</html>
 </html>
