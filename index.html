@@ -640,8 +640,16 @@ function speichernAlsPDF(){
         const img=co.toDataURL('image/jpeg',0.92);
         const jsPDF=window.jspdf.jsPDF;
         const pdf=new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
-        const W=pdf.internal.pageSize.getWidth(), H=(co.height*W)/co.width, pageH=pdf.internal.pageSize.getHeight();
-        let y=0; while(y<H){ if(y>0)pdf.addPage(); pdf.addImage(img,'JPEG',0,-y,W,H); y+=pageH; }
+        // ── Exakt 2 Seiten: Bild auf 2×A4 strecken/stauchen ──
+        const pdfW   = pdf.internal.pageSize.getWidth();   // 210 mm
+        const pdfH   = pdf.internal.pageSize.getHeight();  // 297 mm
+        const totalH = 2 * pdfH;                           // 594 mm = 2 A4-Seiten
+
+        // Seite 1: obere Hälfte des Bildes
+        pdf.addImage(img,'JPEG', 0, 0, pdfW, totalH);
+        // Seite 2: untere Hälfte (Bild um eine Seitenhöhe nach oben versetzt)
+        pdf.addPage();
+        pdf.addImage(img,'JPEG', 0, -pdfH, pdfW, totalH);
         _bereitesBlob=pdf.output('blob');
         wieder(); if(btn){ btn.textContent='📤 Als PDF senden'; btn.disabled=false; }
         const el=document.getElementById('pdfModalDateiname'); if(el) el.textContent=_bereiterFilename;
