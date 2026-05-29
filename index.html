@@ -651,17 +651,13 @@ function speichernAlsPDF(){
     page.style.zoom = '';
     requestAnimationFrame(() => requestAnimationFrame(() => {
 
-        // ── Split-Punkt: VOR dem margin-top des .page-break-Divs ──
-        const pb      = document.querySelector('.page-break');
-        const pageR   = page.getBoundingClientRect();
-        let splitFrac = 0.55;
-        if (pb) {
-            const pbR        = pb.getBoundingClientRect();
-            const marginTop  = parseFloat(getComputedStyle(pb).marginTop) || 0;
-            // Split-Position = Oberkante des page-break MINUS sein margin-top
-            const splitPx    = (pbR.top - marginTop) - pageR.top;
-            splitFrac = Math.max(0.35, Math.min(0.82, splitPx / pageR.height));
-        }
+        // ── Split-Punkt: Oberkante des .page-break-Divs (via BoundingClientRect) ──
+        const pb       = document.querySelector('.page-break');
+        const pageR    = page.getBoundingClientRect();
+        const pbR      = pb ? pb.getBoundingClientRect() : null;
+        const splitFrac = pbR
+            ? Math.max(0.40, Math.min(0.78, (pbR.top - pageR.top) / pageR.height))
+            : 0.55;
 
         if(leiste) leiste.style.setProperty('display','none','important');
         if(status) status.style.display = 'none';
@@ -680,25 +676,30 @@ function speichernAlsPDF(){
             c2.width = co.width; c2.height = Math.max(1, co.height - splitY);
             c2.getContext('2d').drawImage(co, 0, splitY, co.width, co.height - splitY, 0, 0, co.width, co.height - splitY);
 
+            // ── PDF mit 10mm Rand, Seitenverhältnis erhalten ──
             const jsPDF = window.jspdf.jsPDF;
             const pdf   = new jsPDF({ orientation:'portrait', unit:'mm', format:'a4' });
-            const PW    = pdf.internal.pageSize.getWidth();   // 210 mm
-            const PH    = pdf.internal.pageSize.getHeight();  // 297 mm
+            const PW    = pdf.internal.pageSize.getWidth();    // 210 mm
+            const PH    = pdf.internal.pageSize.getHeight();   // 297 mm
+            const M     = 10;          // Rand auf allen Seiten
+            const aW    = PW - 2*M;   // 190 mm nutzbar
+            const aH    = PH - 2*M;   // 277 mm nutzbar
 
-            // ── Einheitlicher Maßstab: beide Seiten auf exakt A4-Breite (210mm) ──
-            // Das HTML-Dokument hat eigene padding-Ränder (10mm) – kein extra PDF-Rand nötig.
-            // Beide Canvas haben identische Breite (co.width), dadurch gleicher Maßstab.
             function seiteEinfuegen(cvs) {
-                const img = cvs.toDataURL('image/jpeg', 0.93);
-                // Skalierung: Canvas-Breite → exakt 210mm (volle A4-Breite)
-                const dH  = (cvs.height / cvs.width) * PW;
-                // Seite an linker Oberkante einsetzen (HTML-Padding ist der visuelle Rand)
-                pdf.addImage(img, 'JPEG', 0, 0, PW, Math.min(dH, PH));
+                const img  = cvs.toDataURL('image/jpeg', 0.93);
+                const asp  = cvs.width / cvs.height;
+                // Erst auf volle Breite skalieren, dann prüfen ob Höhe überschritten
+                let dW = aW, dH = aW / asp;
+                if (dH > aH) { dH = aH; dW = aH * asp; }
+                // Horizontal zentrieren, vertikal oben ausrichten
+                const x = M + (aW - dW) / 2;
+                const y = M;
+                pdf.addImage(img, 'JPEG', x, y, dW, dH);
             }
 
-            seiteEinfuegen(c1);   // Seite 1: Tabelle
+            seiteEinfuegen(c1);          // Seite 1: Tabelle
             pdf.addPage();
-            seiteEinfuegen(c2);   // Seite 2: Kopf, KW, Unterschrift, Fuß
+            seiteEinfuegen(c2);          // Seite 2: Unterschrift/KW
 
             _bereitesBlob = pdf.output('blob');
             wieder();
