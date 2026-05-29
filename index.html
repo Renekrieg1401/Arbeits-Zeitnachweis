@@ -24,9 +24,7 @@
         body { font-family:Arial,sans-serif; margin:0; padding:10px 10px 80px; color:#333; background:#525659; -webkit-text-size-adjust:100%; min-height:100vh; }
 
         /* UPDATE-BANNER */
-        #updateBanner { display:none; position:fixed; top:0; left:0; right:0; background:#2e7d32; color:#fff; padding:12px 16px; z-index:99998; font-size:14px; align-items:center; justify-content:space-between; gap:10px; box-shadow:0 2px 8px rgba(0,0,0,.3); }
-        #updateBanner.aktiv { display:flex; }
-        #updateBanner button { background:#fff; color:#2e7d32; border:none; border-radius:6px; padding:6px 14px; font-weight:bold; font-size:13px; cursor:pointer; white-space:nowrap; }
+        /* Update-Modal: styles inline im HTML-Element */
 
         /* START-OVERLAY */
         #startOverlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,.75); z-index:100000; align-items:center; justify-content:center; padding:16px; }
@@ -129,10 +127,25 @@
     </div>
 </div>
 
-<!-- UPDATE-BANNER -->
-<div id="updateBanner">
-    <span>🔄 Neue Version verfügbar. Ihre Daten bleiben erhalten.</span>
-    <button onclick="location.reload(true)">Aktualisieren</button>
+<!-- UPDATE-MODAL (zentral, nicht übersehbar) -->
+<div id="updateBanner" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:99998;align-items:center;justify-content:center;padding:20px;">
+    <div style="background:#fff;max-width:380px;width:100%;border-radius:16px;overflow:hidden;box-shadow:0 8px 40px rgba(0,0,0,.4);">
+        <div style="background:#2e7d32;padding:18px 20px;">
+            <div style="font-size:22px;font-weight:bold;color:#fff;">🔄 Update verfügbar</div>
+            <div style="font-size:13px;color:#c8e6c9;margin-top:4px;">Eine neue Version ist bereit</div>
+        </div>
+        <div style="padding:18px 20px;">
+            <p style="margin:0 0 16px;font-size:14px;color:#333;line-height:1.5;">
+                Ihre eingegebenen Daten bleiben vollständig erhalten und werden <strong>nicht gelöscht</strong>.
+            </p>
+            <button onclick="location.reload(true)" style="width:100%;padding:14px;background:#2e7d32;color:#fff;border:none;border-radius:10px;font-size:16px;font-weight:bold;cursor:pointer;margin-bottom:10px;">
+                ✅ Jetzt aktualisieren
+            </button>
+            <button onclick="document.getElementById('updateBanner').style.display='none'" style="width:100%;padding:11px;background:transparent;color:#888;border:1px solid #ddd;border-radius:10px;font-size:14px;cursor:pointer;">
+                Später
+            </button>
+        </div>
+    </div>
 </div>
 
 <div id="saveStatus">✓ Gespeichert</div>
@@ -256,7 +269,7 @@ async function pruefeAufUpdate() {
         const res = await fetch(location.href.split('?')[0] + '?v=' + Date.now(), { cache:'no-store' });
         const txt = await res.text();
         const m = txt.match(/APP-VERSION:\s*([\w-]+)/);
-        if (m && m[1] !== AKTUELLE_VERSION) document.getElementById('updateBanner').classList.add('aktiv');
+        if (m && m[1] !== AKTUELLE_VERSION) document.getElementById('updateBanner').style.setProperty('display','flex','important');
     } catch(e) {}
 }
 window.addEventListener('load', () => { pruefeAufUpdate(); setInterval(pruefeAufUpdate, 300000); });
@@ -630,26 +643,50 @@ function speichernAlsPDF(){
 
     const page=document.getElementById('pdfArea');
     const prevZoom=page.style.zoom;
-    page.style.zoom='';   // volle Auflösung fürs PDF
+
+    // Zoom zurücksetzen für korrektes Rendering + Messung
+    page.style.zoom='';
+    void page.offsetHeight; // Reflow erzwingen
+
+    // Split-Punkt am .page-break-Element messen
+    const pb       = document.querySelector('.page-break');
+    const pageRect = page.getBoundingClientRect();
+    const splitFraction = pb
+        ? Math.max(0.35, Math.min(0.75,
+            (pb.getBoundingClientRect().top - pageRect.top) / pageRect.height))
+        : 0.5;
 
     if(leiste)leiste.style.setProperty('display','none','important');
     if(status)status.style.display='none';
 
     html2canvas(page,{scale:2,useCORS:true,allowTaint:true}).then(co=>{
         page.style.zoom=prevZoom;
-        const img=co.toDataURL('image/jpeg',0.92);
+
+        // Canvas am Seitenumbruch aufteilen → garantiert exakt 2 Seiten
+        const splitY = Math.round(co.height * splitFraction);
+
+        // Seite 1: oberer Teil
+        const c1=document.createElement('canvas');
+        c1.width=co.width; c1.height=splitY;
+        c1.getContext('2d').drawImage(co, 0,0,co.width,splitY, 0,0,co.width,splitY);
+
+        // Seite 2: unterer Teil
+        const c2=document.createElement('canvas');
+        c2.width=co.width; c2.height=co.height-splitY;
+        c2.getContext('2d').drawImage(co, 0,splitY,co.width,co.height-splitY, 0,0,co.width,co.height-splitY);
+
+        const img1=c1.toDataURL('image/jpeg',0.92);
+        const img2=c2.toDataURL('image/jpeg',0.92);
+
         const jsPDF=window.jspdf.jsPDF;
         const pdf=new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
-        // ── Exakt 2 Seiten: Bild auf 2×A4 strecken/stauchen ──
-        const pdfW   = pdf.internal.pageSize.getWidth();   // 210 mm
-        const pdfH   = pdf.internal.pageSize.getHeight();  // 297 mm
-        const totalH = 2 * pdfH;                           // 594 mm = 2 A4-Seiten
+        const W=pdf.internal.pageSize.getWidth();   // 210 mm
+        const H=pdf.internal.pageSize.getHeight();  // 297 mm
 
-        // Seite 1: obere Hälfte des Bildes
-        pdf.addImage(img,'JPEG', 0, 0, pdfW, totalH);
-        // Seite 2: untere Hälfte (Bild um eine Seitenhöhe nach oben versetzt)
+        pdf.addImage(img1,'JPEG',0,0,W,H);   // Seite 1 füllt genau A4
         pdf.addPage();
-        pdf.addImage(img,'JPEG', 0, -pdfH, pdfW, totalH);
+        pdf.addImage(img2,'JPEG',0,0,W,H);   // Seite 2 füllt genau A4
+
         _bereitesBlob=pdf.output('blob');
         wieder(); if(btn){ btn.textContent='📤 Als PDF senden'; btn.disabled=false; }
         const el=document.getElementById('pdfModalDateiname'); if(el) el.textContent=_bereiterFilename;
