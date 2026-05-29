@@ -67,7 +67,7 @@
         .col-notes { width:50%; text-align:left; }
         .notes-header { font-size:9px; text-align:left; font-weight:normal; line-height:1.3; background:var(--header-bg-color)!important; padding:5px!important; transition:background-color .3s; }
         input.cell-input { width:100%; border:none; background:transparent; text-align:center; font-size:12px; -webkit-appearance:none; border-radius:0; padding:5px 0; min-height:28px; font-family:Arial,sans-serif; }
-        textarea.cell-input { width:100%; border:none; background:transparent; text-align:left; font-size:12px; padding:5px 4px; min-height:28px; line-height:1.3; resize:none; overflow:hidden; font-family:Arial,sans-serif; }
+        textarea.cell-input { width:100%; border:none; background:transparent; text-align:left; font-size:12px; padding:5px 4px; min-height:28px; height:28px; line-height:1.4; resize:none; overflow:hidden; font-family:Arial,sans-serif; display:block; box-sizing:border-box; }
         .weekend-row { background:var(--weekend-color)!important; }
         .holiday-row { background:#ffe3e3!important; }
         .holiday-row .col-day { text-decoration:underline; }
@@ -122,6 +122,9 @@
             <li><strong>Unterschrift</strong> und <strong>Datum</strong></li>
         </ul>
         <div class="mail">📧 Versenden an: <strong>Gabi.willner@ekhn.de</strong></div>
+        <div style="background:#fff3cd;border:1px solid #ffc107;border-radius:8px;padding:10px 12px;margin:14px 0 16px;font-size:13px;color:#7d5a00;line-height:1.5;">
+            ⚠️ <strong>Wichtig:</strong> Wenn Sie diese App vom Homescreen entfernen, werden <strong>alle eingegebenen Daten unwiderruflich gelöscht</strong> und können nicht wiederhergestellt werden.
+        </div>
         <button onclick="overlaySchliessen()">Verstanden</button>
     </div>
 </div>
@@ -139,6 +142,7 @@
     <!-- <button type="button" class="knopf-design" style="background:#ef6c00;" onclick="triggerManualLoad()">🔄 Laden</button> -->
     <button type="button" class="knopf-design" style="background:#004b7c;" onclick="speichernAlsPDF()">📤 Als PDF senden</button>
 </div>
+
 
 <div class="mobil-scroll-wrapper" id="scrollWrapper">
     <div class="page" id="pdfArea">
@@ -342,9 +346,10 @@ let _letzteBreite = 0;
 function skaliereFuerSmartphone(){
     const page = document.getElementById('pdfArea');
     const vw = document.documentElement.clientWidth;
-    if (vw === _letzteBreite) return;   // keine echte Änderung → ignorieren
+    if (vw === _letzteBreite) return;
     _letzteBreite = vw;
     page.style.zoom = (vw < 815) ? (vw / PAGE_WIDTH_PX).toFixed(4) : '';
+    rekalkuliereAlleTextareas();
 }
 let resizeTimer = null;
 window.addEventListener('resize', () => { clearTimeout(resizeTimer); resizeTimer = setTimeout(skaliereFuerSmartphone, 150); });
@@ -374,7 +379,17 @@ function handleTimeBlur(input){
 /* ═══════════════════════════════════════════════════════════
    BEMERKUNG (Textarea): Tab = Zeilenumbruch, Kurzkommandos
 ═══════════════════════════════════════════════════════════ */
-function autoGrow(ta){ ta.style.height='auto'; ta.style.height=(ta.scrollHeight)+'px'; }
+function autoGrow(ta){
+    if (!ta) return;
+    ta.style.height = '0';          // erst auf 0 setzen damit scrollHeight korrekt gemessen wird
+    ta.style.height = ta.scrollHeight + 'px';
+}
+// Alle Textareas nach Datenladung neu berechnen (2× RAF für sicheres Rendering)
+function rekalkuliereAlleTextareas(){
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+        document.querySelectorAll('#tableBody textarea').forEach(ta => autoGrow(ta));
+    }));
+}
 function bemerkungKeydown(e, ta){
     if (e.key === 'Tab'){
         e.preventDefault();
@@ -434,18 +449,80 @@ async function saveTableData(){
 }
 
 /* ═══════════════════════════════════════════════════════════
-   LADEN (entschlüsselt)
+   VORDATEN  – Mai 2026 aus Screenshot
+   Werden geladen wenn für diesen Monat noch keine gespeicherten
+   Daten existieren. Alle Felder bleiben vollständig editierbar.
+═══════════════════════════════════════════════════════════ */
+const VORDATEN = {
+    '2026-05': {
+        username: 'René Krieg',
+        kwInput:  '11+13',
+        sigDate:  '2026-05-31',
+        cells: {
+            'cell-1-frueh-von':'06:20','cell-1-frueh-bis':'11:45',
+            'cell-2-frueh-von':'06:23','cell-2-frueh-bis':'11:20',
+            'cell-3-frueh-von':'06:27','cell-3-frueh-bis':'10:23',
+            'cell-4-spaet-von':'16:13','cell-4-spaet-bis':'20:46',
+            'cell-5-bemerkung':'Frei',
+            'cell-6-frueh-von':'06:13','cell-6-frueh-bis':'11:41',
+            'cell-6-spaet-von':'13:00','cell-6-spaet-bis':'14:00','cell-6-bemerkung':'Dienstbesprechung',
+            'cell-7-frueh-von':'06:20','cell-7-frueh-bis':'11:32',
+            'cell-8-frueh-von':'06:18','cell-8-frueh-bis':'13:00','cell-8-bemerkung':'-30 Min Pause',
+            'cell-9-bemerkung':'Frei',
+            'cell-10-bemerkung':'Frei',
+            'cell-11-frueh-von':'06:21','cell-11-frueh-bis':'12:30',
+            'cell-12-frueh-von':'06:15','cell-12-frueh-bis':'11:32',
+            'cell-13-frueh-von':'06:17','cell-13-frueh-bis':'12:33',
+            'cell-13-spaet-von':'14:00','cell-13-spaet-bis':'15:30','cell-13-bemerkung':'Fortbildung',
+            'cell-14-bemerkung':'Frei',
+            'cell-15-spaet-von':'16:19','cell-15-spaet-bis':'20:24',
+            'cell-16-spaet-von':'16:08','cell-16-spaet-bis':'20:26',
+            'cell-17-spaet-von':'16:31','cell-17-spaet-bis':'20:19',
+            'cell-18-bemerkung':'Frei',
+            'cell-19-spaet-von':'11:50','cell-19-spaet-bis':'12:05','cell-19-bemerkung':'Frei. Übergabe',
+            'cell-20-frueh-von':'06:11','cell-20-frueh-bis':'11:22',
+            'cell-20-spaet-von':'12:30','cell-20-spaet-bis':'14:30','cell-20-bemerkung':'Dienstbesprechung',
+            'cell-21-frueh-von':'06:08','cell-21-frueh-bis':'11:41',
+            'cell-22-frueh-von':'06:02','cell-22-frueh-bis':'12:00',
+            'cell-23-bemerkung':'Frei',
+            'cell-24-bemerkung':'Frei',
+            'cell-25-bemerkung':'Frei',
+            'cell-26-frueh-von':'06:00','cell-26-frueh-bis':'11:56',
+            'cell-26-spaet-von':'14:00','cell-26-spaet-bis':'15:15','cell-26-bemerkung':'Dienstgespräch mit Ralf',
+            'cell-27-frueh-von':'06:09','cell-27-frueh-bis':'12:47','cell-27-bemerkung':'-30Min Pause',
+            'cell-28-frueh-von':'06:01','cell-28-frueh-bis':'11:30',
+            'cell-29-bemerkung':'Frei'
+        }
+    }
+};
+
+function applyVordaten(monat) {
+    const d = VORDATEN[monat];
+    if (!d) return;
+    if (d.username) document.getElementById('nameInput').value = d.username;
+    if (d.kwInput)  { const kw=document.getElementById('kwInput'); if(kw) kw.value=d.kwInput; }
+    if (d.sigDate)  document.getElementById('sigDate').value = d.sigDate;
+    if (d.cells) Object.keys(d.cells).forEach(id => {
+        const el = document.getElementById(id);
+        if (el) { el.value = d.cells[id]; if (el.tagName==='TEXTAREA') autoGrow(el); }
+    });
+    rekalkuliereAlleTextareas();   // zweiter Pass nach vollständigem Render
+    scheduleAutoSave();
+}
+
+/* ═══════════════════════════════════════════════════════════
+   LADEN (entschlüsselt) – gibt true zurück wenn Daten gefunden
 ═══════════════════════════════════════════════════════════ */
 async function loadTableData(){
-    const mv = document.getElementById('monthInput').value; if(!mv) return;
-    let raw; try { raw = localStorage.getItem(storagePrefix+'data_'+mv); } catch(e){ return; }
+    const mv = document.getElementById('monthInput').value; if(!mv) return false;
+    let raw; try { raw = localStorage.getItem(storagePrefix+'data_'+mv); } catch(e){ return false; }
     if (!raw){
         const gn = localStorage.getItem(storagePrefix+'global_username');
         if (gn && !document.getElementById('nameInput').value) document.getElementById('nameInput').value = gn;
-        return;
+        return false;  // ← keine Daten gefunden
     }
     let p;
-    try { p = JSON.parse(await entschluesseln(raw)); } catch(e){ console.warn('Ladefehler:', e); return; }
+    try { p = JSON.parse(await entschluesseln(raw)); } catch(e){ console.warn('Ladefehler:', e); return false; }
     if (p.username) document.getElementById('nameInput').value = p.username;
     if (p.kwInput)  { const kw=document.getElementById('kwInput'); if(kw) kw.value=p.kwInput; }
     if (p.sigDate)  document.getElementById('sigDate').value = p.sigDate;
@@ -453,6 +530,8 @@ async function loadTableData(){
         const img=new Image(); img.onload=()=>{ ctx.clearRect(0,0,canvas.width,canvas.height); ctx.drawImage(img,0,0); }; img.src=p.signatureImg;
     }
     if (p.cells) Object.keys(p.cells).forEach(id => { const el=document.getElementById(id); if(el){ el.value=p.cells[id]; if(el.tagName==='TEXTAREA') autoGrow(el); } });
+    rekalkuliereAlleTextareas();   // zweiter Pass nach vollständigem Render
+    return true;  // ← Daten erfolgreich geladen
 }
 
 /* ═══════════════════════════════════════════════════════════
@@ -498,15 +577,16 @@ async function handleMonthUpdate(isManualChange){
 
     const kwEl=document.getElementById('kwInput');
 
-    await loadTableData();
+    const datenGefunden = await loadTableData();
 
-    // Datum bei Monatswechsel zurücksetzen (korrektes Datum sicherstellen)
+    // Keine gespeicherten Daten → Vordaten einsetzen falls vorhanden
+    if (!datenGefunden) applyVordaten(mi.value);
+
+    // Datum bei manuellem Monatswechsel zurücksetzen
     if (isManualChange){
         document.getElementById('sigDate').value = '';
-        // KW-Feld bei manuellem Wechsel leeren falls noch Standardwert – Nutzer trägt Vormonats-KW ein
         if (kwEl && /^KW /.test(kwEl.value)) kwEl.value = '';
     }
-    // Vorschlag nur wenn leer
     if (kwEl && !kwEl.value) kwEl.placeholder = `Vormonat – z.B. KW ${startKW}-${endKW}`;
 
     _letzteBreite = 0;
@@ -529,6 +609,8 @@ async function loadMonthDataset(){
    START-OVERLAY
 ═══════════════════════════════════════════════════════════ */
 function overlaySchliessen(){ document.getElementById('startOverlay').classList.remove('aktiv'); }
+
+
 
 /* ═══════════════════════════════════════════════════════════
    PDF SENDEN (Zwei-Schritt: async render → sync share)
