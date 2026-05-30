@@ -1,4 +1,4 @@
-<!-- APP-VERSION: 2025-05-29-003 -->
+<!-- APP-VERSION: 2025-05-29-004 -->
 <!DOCTYPE html>
 <html lang="de">
 <head>
@@ -60,6 +60,13 @@
         .notes-header { font-size:9px; text-align:left; font-weight:normal; line-height:1.3; background:var(--header-bg-color)!important; padding:5px!important; transition:background-color .3s; }
         input.cell-input { width:100%; border:none; background:transparent; text-align:center; font-size:12px; -webkit-appearance:none; border-radius:0; padding:5px 0; min-height:28px; font-family:Arial,sans-serif; }
         textarea.cell-input { width:100%; border:none; background:transparent; text-align:left; font-size:12px; padding:5px 4px; min-height:28px; height:28px; line-height:1.4; resize:none; overflow:hidden; font-family:Arial,sans-serif; display:block; box-sizing:border-box; }
+
+        /* ═══ KOMPAKT-MODUS: nur während PDF-Export aktiv ═══
+           Verkleinert die Zeilen, damit die 31-Tage-Tabelle in voller
+           Breite auf eine A4-Seite passt. Bildschirmansicht bleibt unberührt. */
+        .pdf-modus th,.pdf-modus td { padding:2px 3px; }
+        .pdf-modus input.cell-input { min-height:21px; padding:2px 0; }
+        .pdf-modus textarea.cell-input { min-height:21px; padding:2px 4px; line-height:1.2; }
         .weekend-row { background:var(--weekend-color)!important; }
         .holiday-row { background:#ffe3e3!important; }
         .holiday-row .col-day { text-decoration:underline; }
@@ -256,7 +263,7 @@
 /* ═══════════════════════════════════════════════════════════
    AUTO-UPDATE  (Daten bleiben erhalten – localStorage wird NIE gelöscht)
 ═══════════════════════════════════════════════════════════ */
-const AKTUELLE_VERSION = '2025-05-29-003';
+const AKTUELLE_VERSION = '2025-05-29-004';
 async function pruefeAufUpdate() {
     if (!navigator.onLine || !location.protocol.startsWith('http')) return;
     try {
@@ -646,8 +653,19 @@ function speichernAlsPDF(){
     const page = document.getElementById('pdfArea');
     const prevZoom = page.style.zoom;
 
-    // Zoom zurücksetzen + zwei RAF-Zyklen für vollständigen Reflow
+    // Zoom zurücksetzen + Kompakt-Modus aktivieren (Tabelle passt in voller Breite)
     page.style.zoom = '';
+    page.classList.add('pdf-modus');
+    // Textarea-Höhen im Kompakt-Modus neu berechnen (kleinere Schrift/Zeilenhöhe)
+    document.querySelectorAll('#tableBody textarea').forEach(ta => autoGrow(ta));
+
+    const aufraeumen = () => {
+        page.classList.remove('pdf-modus');
+        page.style.zoom = prevZoom;
+        // Höhen für normale Bildschirmansicht zurückrechnen
+        document.querySelectorAll('#tableBody textarea').forEach(ta => autoGrow(ta));
+    };
+
     requestAnimationFrame(() => requestAnimationFrame(() => {
 
         // ── Split-Punkt: VOR dem margin-top des .page-break-Divs ──
@@ -666,7 +684,7 @@ function speichernAlsPDF(){
         if(status) status.style.display = 'none';
 
         html2canvas(page, { scale:2, useCORS:true, allowTaint:true }).then(co => {
-            page.style.zoom = prevZoom;
+            aufraeumen();
 
             // ── Canvas am Split-Punkt aufteilen ──
             const splitY = Math.round(co.height * splitFrac);
@@ -710,7 +728,7 @@ function speichernAlsPDF(){
             document.getElementById('pdfModal').classList.add('aktiv');
 
         }).catch(e => {
-            page.style.zoom = prevZoom;
+            aufraeumen();
             wieder();
             if(btn){ btn.textContent = '📤 Als PDF senden'; btn.disabled = false; }
             alert('❌ Fehler:\n' + (e.message || e));
