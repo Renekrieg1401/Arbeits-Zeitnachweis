@@ -1,4 +1,4 @@
-<!-- APP-VERSION: 2025-05-29-002 -->
+<!-- APP-VERSION: 2025-05-29-003 -->
 <!DOCTYPE html>
 <html lang="de">
 <head>
@@ -256,7 +256,7 @@
 /* ═══════════════════════════════════════════════════════════
    AUTO-UPDATE  (Daten bleiben erhalten – localStorage wird NIE gelöscht)
 ═══════════════════════════════════════════════════════════ */
-const AKTUELLE_VERSION = '2025-05-29-002';
+const AKTUELLE_VERSION = '2025-05-29-003';
 async function pruefeAufUpdate() {
     if (!navigator.onLine || !location.protocol.startsWith('http')) return;
     try {
@@ -463,7 +463,7 @@ async function saveTableData(){
 const VORDATEN = {
     '2026-05': {
         username: 'René Krieg',
-        kwInput:  '11+13',
+        kwInput:  '',
         sigDate:  '2026-05-31',
         cells: {
             'cell-1-frueh-von':'06:20','cell-1-frueh-bis':'11:45',
@@ -571,14 +571,13 @@ async function handleMonthUpdate(isManualChange){
         const tr=document.createElement('tr');
         const cls=[]; if(dow===0||dow===6) cls.push('weekend-row'); if(ftName) cls.push('holiday-row');
         if(cls.length) tr.className=cls.join(' ');
-        const ftLabel = ftName ? `<span class="feiertag-label">🔴 ${ftName}</span>` : '';
         tr.innerHTML = `
             <td class="col-day">${String(i).padStart(2,'0')}</td>
             <td><input type="text" inputmode="numeric" class="cell-input" id="cell-${i}-frueh-von" oninput="cleanTime(this);scheduleAutoSave();" onblur="handleTimeBlur(this)" placeholder="--:--"></td>
             <td><input type="text" inputmode="numeric" class="cell-input" id="cell-${i}-frueh-bis" oninput="cleanTime(this);scheduleAutoSave();" onblur="handleTimeBlur(this)" placeholder="--:--"></td>
             <td><input type="text" inputmode="numeric" class="cell-input" id="cell-${i}-spaet-von" oninput="cleanTime(this);scheduleAutoSave();" onblur="handleTimeBlur(this)" placeholder="--:--"></td>
             <td><input type="text" inputmode="numeric" class="cell-input" id="cell-${i}-spaet-bis" oninput="cleanTime(this);scheduleAutoSave();" onblur="handleTimeBlur(this)" placeholder="--:--"></td>
-            <td>${ftLabel}<textarea rows="1" class="cell-input" id="cell-${i}-bemerkung" oninput="autoGrow(this);scheduleAutoSave();" onkeydown="bemerkungKeydown(event,this)" onblur="autoExpandNote(this)"></textarea></td>`;
+            <td><textarea rows="1" class="cell-input" id="cell-${i}-bemerkung" oninput="autoGrow(this);scheduleAutoSave();" onkeydown="bemerkungKeydown(event,this)" onblur="autoExpandNote(this)"></textarea></td>`;
         tbody.appendChild(tr);
     }
 
@@ -651,13 +650,17 @@ function speichernAlsPDF(){
     page.style.zoom = '';
     requestAnimationFrame(() => requestAnimationFrame(() => {
 
-        // ── Split-Punkt: Oberkante des .page-break-Divs (via BoundingClientRect) ──
-        const pb       = document.querySelector('.page-break');
-        const pageR    = page.getBoundingClientRect();
-        const pbR      = pb ? pb.getBoundingClientRect() : null;
-        const splitFrac = pbR
-            ? Math.max(0.40, Math.min(0.78, (pbR.top - pageR.top) / pageR.height))
-            : 0.55;
+        // ── Split-Punkt: VOR dem margin-top des .page-break-Divs ──
+        const pb      = document.querySelector('.page-break');
+        const pageR   = page.getBoundingClientRect();
+        let splitFrac = 0.55;
+        if (pb) {
+            const pbR        = pb.getBoundingClientRect();
+            const marginTop  = parseFloat(getComputedStyle(pb).marginTop) || 0;
+            // Split-Position = Oberkante des page-break MINUS sein margin-top
+            const splitPx    = (pbR.top - marginTop) - pageR.top;
+            splitFrac = Math.max(0.35, Math.min(0.82, splitPx / pageR.height));
+        }
 
         if(leiste) leiste.style.setProperty('display','none','important');
         if(status) status.style.display = 'none';
@@ -676,30 +679,28 @@ function speichernAlsPDF(){
             c2.width = co.width; c2.height = Math.max(1, co.height - splitY);
             c2.getContext('2d').drawImage(co, 0, splitY, co.width, co.height - splitY, 0, 0, co.width, co.height - splitY);
 
-            // ── PDF mit 10mm Rand, Seitenverhältnis erhalten ──
             const jsPDF = window.jspdf.jsPDF;
             const pdf   = new jsPDF({ orientation:'portrait', unit:'mm', format:'a4' });
-            const PW    = pdf.internal.pageSize.getWidth();    // 210 mm
-            const PH    = pdf.internal.pageSize.getHeight();   // 297 mm
-            const M     = 10;          // Rand auf allen Seiten
-            const aW    = PW - 2*M;   // 190 mm nutzbar
-            const aH    = PH - 2*M;   // 277 mm nutzbar
+            const PW    = pdf.internal.pageSize.getWidth();   // 210 mm
+            const PH    = pdf.internal.pageSize.getHeight();  // 297 mm
 
+            // Jede Seite KOMPLETT auf eine A4-Seite einpassen (Seitenverhältnis bleibt).
+            // Dadurch wird nichts abgeschnitten – passt etwas nicht in die Breite,
+            // wird es so verkleinert, dass die ganze Höhe auf die Seite passt.
             function seiteEinfuegen(cvs) {
-                const img  = cvs.toDataURL('image/jpeg', 0.93);
-                const asp  = cvs.width / cvs.height;
-                // Erst auf volle Breite skalieren, dann prüfen ob Höhe überschritten
-                let dW = aW, dH = aW / asp;
-                if (dH > aH) { dH = aH; dW = aH * asp; }
-                // Horizontal zentrieren, vertikal oben ausrichten
-                const x = M + (aW - dW) / 2;
-                const y = M;
+                const img = cvs.toDataURL('image/jpeg', 0.95);
+                const asp = cvs.width / cvs.height;
+                // Zuerst volle Breite, dann ggf. auf Höhe begrenzen (kein Beschnitt)
+                let dW = PW, dH = PW / asp;
+                if (dH > PH) { dH = PH; dW = PH * asp; }
+                const x = (PW - dW) / 2;   // horizontal zentriert
+                const y = 0;               // oben ausgerichtet
                 pdf.addImage(img, 'JPEG', x, y, dW, dH);
             }
 
-            seiteEinfuegen(c1);          // Seite 1: Tabelle
+            seiteEinfuegen(c1);   // Seite 1: Tabelle (vollständig, kein Beschnitt)
             pdf.addPage();
-            seiteEinfuegen(c2);          // Seite 2: Unterschrift/KW
+            seiteEinfuegen(c2);   // Seite 2: Kopf, KW, Unterschrift, Fuß
 
             _bereitesBlob = pdf.output('blob');
             wieder();
@@ -759,4 +760,5 @@ document.addEventListener("DOMContentLoaded", async () => {
 </script>
 
 </body>
+</html>
 </html>
