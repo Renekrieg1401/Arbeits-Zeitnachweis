@@ -1,4 +1,4 @@
-<!-- APP-VERSION: 2025-05-29-004 -->
+<!-- APP-VERSION: 2025-05-29-005 -->
 <!DOCTYPE html>
 <html lang="de">
 <head>
@@ -52,21 +52,19 @@
         .name-field { font-size:14px; font-weight:bold; width:200px; }
 
         table { width:100%; border-collapse:collapse; font-size:11px; min-width:680px; }
-        th,td { border:1px solid #666; padding:4px 3px; text-align:center; vertical-align:middle; }
+        th,td { border:1px solid #666; padding:4px 3px; text-align:center; vertical-align:middle; overflow:visible; }
         th { background:#f9f9f9; font-weight:bold; }
         .col-day { width:5%; font-weight:bold; }
         .col-time { width:10%; }
         .col-notes { width:50%; text-align:left; }
         .notes-header { font-size:9px; text-align:left; font-weight:normal; line-height:1.3; background:var(--header-bg-color)!important; padding:5px!important; transition:background-color .3s; }
-        input.cell-input { width:100%; border:none; background:transparent; text-align:center; font-size:12px; -webkit-appearance:none; border-radius:0; padding:5px 0; min-height:28px; font-family:Arial,sans-serif; }
-        textarea.cell-input { width:100%; border:none; background:transparent; text-align:left; font-size:12px; padding:5px 4px; min-height:28px; height:28px; line-height:1.4; resize:none; overflow:hidden; font-family:Arial,sans-serif; display:block; box-sizing:border-box; }
+        input.cell-input { width:100%; border:none; background:transparent; text-align:center; font-size:12px; -webkit-appearance:none; border-radius:0; padding:5px 0; min-height:30px; font-family:Arial,sans-serif; box-sizing:border-box; }
+        textarea.cell-input { width:100%; border:none; background:transparent; text-align:left; font-size:12px; padding:5px 4px 7px; min-height:30px; height:30px; line-height:1.45; resize:none; overflow:hidden; font-family:Arial,sans-serif; display:block; box-sizing:border-box; }
 
-        /* ═══ KOMPAKT-MODUS: nur während PDF-Export aktiv ═══
-           Verkleinert die Zeilen, damit die 31-Tage-Tabelle in voller
-           Breite auf eine A4-Seite passt. Bildschirmansicht bleibt unberührt. */
+        /* ═══ KOMPAKT-MODUS: nur während PDF-Export aktiv ═══ */
         .pdf-modus th,.pdf-modus td { padding:2px 3px; }
         .pdf-modus input.cell-input { min-height:21px; padding:2px 0; }
-        .pdf-modus textarea.cell-input { min-height:21px; padding:2px 4px; line-height:1.2; }
+        .pdf-modus textarea.cell-input { min-height:21px; padding:2px 4px 3px; line-height:1.2; }
         .weekend-row { background:var(--weekend-color)!important; }
         .holiday-row { background:#ffe3e3!important; }
         .holiday-row .col-day { text-decoration:underline; }
@@ -263,7 +261,7 @@
 /* ═══════════════════════════════════════════════════════════
    AUTO-UPDATE  (Daten bleiben erhalten – localStorage wird NIE gelöscht)
 ═══════════════════════════════════════════════════════════ */
-const AKTUELLE_VERSION = '2025-05-29-004';
+const AKTUELLE_VERSION = '2025-05-29-005';
 async function pruefeAufUpdate() {
     if (!navigator.onLine || !location.protocol.startsWith('http')) return;
     try {
@@ -395,8 +393,9 @@ function handleTimeBlur(input){
 ═══════════════════════════════════════════════════════════ */
 function autoGrow(ta){
     if (!ta) return;
-    ta.style.height = '0';          // erst auf 0 setzen damit scrollHeight korrekt gemessen wird
-    ta.style.height = ta.scrollHeight + 'px';
+    ta.style.height = '0';
+    // +4px Puffer: verhindert Abschneiden von Descenders (g, j, p, y)
+    ta.style.height = (ta.scrollHeight + 4) + 'px';
 }
 // Alle Textareas nach Datenladung neu berechnen (2× RAF für sicheres Rendering)
 function rekalkuliereAlleTextareas(){
