@@ -1,4 +1,4 @@
-<!-- APP-VERSION: 2025-05-29-005 -->
+<!-- APP-VERSION: 2025-05-29-007 -->
 <!DOCTYPE html>
 <html lang="de">
 <head>
@@ -118,7 +118,7 @@
             <li><strong>KW</strong> (links unten): KW der ausgehändigten Dienstprotokolle aus dem <strong>Vormonat</strong> (siehe Protokolle links oben)</li>
             <li><strong>Unterschrift</strong> und <strong>Datum</strong></li>
         </ul>
-        <div class="mail">📧 Versenden an: <strong>Gabi.willner@ekhn.de</strong></div>
+        <div class="mail">📧 Versenden an: <strong>Gaby.willner@ekhn.de</strong></div>
         <div style="background:#fff3cd;border:1px solid #ffc107;border-radius:8px;padding:10px 12px;margin:14px 0 16px;font-size:13px;color:#7d5a00;line-height:1.5;">
             ⚠️ <strong>Wichtig:</strong> Wenn Sie diese App vom Homescreen entfernen, werden <strong>alle eingegebenen Daten unwiderruflich gelöscht</strong> und können nicht wiederhergestellt werden.
         </div>
@@ -152,7 +152,8 @@
 <div class="steuerungs-leiste-mobil" id="kontrollZentrum">
     <!-- <button type="button" class="knopf-design" style="background:#2e7d32;" onclick="triggerManualSave()">💾 Sichern</button> -->
     <!-- <button type="button" class="knopf-design" style="background:#ef6c00;" onclick="triggerManualLoad()">🔄 Laden</button> -->
-    <button type="button" class="knopf-design" style="background:#004b7c;" onclick="speichernAlsPDF()">📤 Als PDF senden</button>
+    <button type="button" class="knopf-design" style="background:#004b7c;flex:1;" onclick="speichernAlsPDF()">📤 Als PDF senden</button>
+    <button type="button" class="knopf-design" style="background:#5c6bc0;padding:14px 16px!important;min-width:unset;" onclick="zeigGesamtzeit()" title="Gesamtarbeitszeit">⏱</button>
 </div>
 
 
@@ -256,12 +257,35 @@
     </div>
 </div>
 
+<!-- GESAMTARBEITSZEIT-OVERLAY -->
+<div id="gesamtzeitModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:99997;align-items:center;justify-content:center;padding:16px;">
+    <div style="background:#fff;max-width:400px;width:100%;border-radius:16px;overflow:hidden;box-shadow:0 8px 40px rgba(0,0,0,.4);">
+        <div style="background:#5c6bc0;padding:18px 20px 14px;">
+            <div style="font-size:20px;font-weight:bold;color:#fff;">⏱ Gesamtarbeitszeit</div>
+            <div id="gzMonatLabel" style="font-size:13px;color:#c5cae9;margin-top:3px;"></div>
+        </div>
+        <div style="padding:20px;">
+            <!-- Hauptanzeige -->
+            <div style="text-align:center;padding:16px 0 20px;">
+                <div id="gzGesamt" style="font-size:52px;font-weight:bold;color:#5c6bc0;letter-spacing:2px;line-height:1;">00:00</div>
+                <div style="font-size:13px;color:#888;margin-top:6px;">Stunden : Minuten</div>
+            </div>
+            <!-- Detailzeilen -->
+            <div id="gzDetails" style="border-top:1px solid #eee;padding-top:14px;font-size:14px;"></div>
+            <button onclick="document.getElementById('gesamtzeitModal').style.display='none'"
+                style="width:100%;margin-top:18px;padding:13px;background:#5c6bc0;color:#fff;border:none;border-radius:10px;font-size:15px;font-weight:bold;cursor:pointer;">
+                Schließen
+            </button>
+        </div>
+    </div>
+</div>
+
 <script>
 "use strict";
 /* ═══════════════════════════════════════════════════════════
    AUTO-UPDATE  (Daten bleiben erhalten – localStorage wird NIE gelöscht)
 ═══════════════════════════════════════════════════════════ */
-const AKTUELLE_VERSION = '2025-05-29-005';
+const AKTUELLE_VERSION = '2025-05-29-007';
 async function pruefeAufUpdate() {
     if (!navigator.onLine || !location.protocol.startsWith('http')) return;
     try {
@@ -274,8 +298,87 @@ async function pruefeAufUpdate() {
 window.addEventListener('load', () => { pruefeAufUpdate(); setInterval(pruefeAufUpdate, 300000); });
 
 /* ═══════════════════════════════════════════════════════════
-   KONFIGURATION
+   GESAMTARBEITSZEIT-BERECHNUNG
 ═══════════════════════════════════════════════════════════ */
+function zeitZuMinuten(str) {
+    if (!str || str === '--:--' || !str.includes(':')) return -1;
+    const [h, m] = str.split(':').map(Number);
+    if (isNaN(h) || isNaN(m)) return -1;
+    return h * 60 + m;
+}
+
+function zeigGesamtzeit() {
+    const mVal  = document.getElementById('monthInput').value;
+    if (!mVal) { alert('Bitte zuerst einen Monat wählen.'); return; }
+
+    const [year, mon] = mVal.split('-').map(Number);
+    const tage = new Date(year, mon, 0).getDate();
+
+    let gesamtMin  = 0;
+    let arbeitstage = 0;
+    const wochenMap = {};   // KW → Minuten
+
+    for (let i = 1; i <= tage; i++) {
+        const fVon = document.getElementById(`cell-${i}-frueh-von`)?.value || '';
+        const fBis = document.getElementById(`cell-${i}-frueh-bis`)?.value || '';
+        const sVon = document.getElementById(`cell-${i}-spaet-von`)?.value || '';
+        const sBis = document.getElementById(`cell-${i}-spaet-bis`)?.value || '';
+
+        let tagMin = 0;
+        const fV = zeitZuMinuten(fVon), fB = zeitZuMinuten(fBis);
+        const sV = zeitZuMinuten(sVon), sB = zeitZuMinuten(sBis);
+        if (fV >= 0 && fB > fV) tagMin += fB - fV;
+        if (sV >= 0 && sB > sV) tagMin += sB - sV;
+
+        if (tagMin > 0) {
+            gesamtMin += tagMin;
+            arbeitstage++;
+            // ISO-Kalenderwoche
+            const d  = new Date(year, mon - 1, i);
+            const kw = getISOWeek(d);
+            wochenMap[kw] = (wochenMap[kw] || 0) + tagMin;
+        }
+    }
+
+    // Anzeige formatieren
+    const monatName = new Date(year, mon - 1, 1)
+        .toLocaleDateString('de-DE', { month:'long', year:'numeric' });
+    document.getElementById('gzMonatLabel').textContent = monatName;
+
+    const gh = Math.floor(gesamtMin / 60), gm = gesamtMin % 60;
+    document.getElementById('gzGesamt').textContent =
+        String(gh).padStart(2,'0') + ':' + String(gm).padStart(2,'0');
+
+    // Wochenübersicht
+    const kwKeys = Object.keys(wochenMap).sort((a,b) => Number(a)-Number(b));
+    const details = document.getElementById('gzDetails');
+    details.innerHTML = '';
+
+    if (kwKeys.length > 0) {
+        const titel = document.createElement('div');
+        titel.style.cssText = 'font-weight:bold;color:#555;margin-bottom:8px;font-size:12px;text-transform:uppercase;letter-spacing:.5px;';
+        titel.textContent = 'Aufschlüsselung nach Woche';
+        details.appendChild(titel);
+
+        kwKeys.forEach(kw => {
+            const min = wochenMap[kw];
+            const h   = Math.floor(min / 60), m = min % 60;
+            const row = document.createElement('div');
+            row.style.cssText = 'display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid #f0f0f0;';
+            row.innerHTML = `<span style="color:#444;">KW ${kw}</span>
+                             <span style="font-weight:bold;color:#5c6bc0;">${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')} h</span>`;
+            details.appendChild(row);
+        });
+    }
+
+    // Arbeitstage-Info
+    const info = document.createElement('div');
+    info.style.cssText = 'margin-top:12px;font-size:13px;color:#888;text-align:center;';
+    info.textContent = `${arbeitstage} Arbeitstag${arbeitstage !== 1 ? 'e' : ''} mit eingetragenen Zeiten`;
+    details.appendChild(info);
+
+    document.getElementById('gesamtzeitModal').style.setProperty('display','flex','important');
+}
 const storagePrefix = "diakonie_local_";
 let autoSaveTimer = null;
 const monthColors = { 1:'#cce6ff',2:'#ffccd5',3:'#e8f5e9',4:'#fdfd96',5:'#f5f5f5',6:'#b3f0c2',7:'#ffb7ce',8:'#f4e7d3',9:'#ffd1a4',10:'#d7ccc8',11:'#dec4f4',12:'#ffb3b3' };
@@ -738,7 +841,7 @@ function jetzt_teilen_synchron(){
     if(!_bereitesBlob){ alert('❌ Kein PDF bereit.'); return; }
     const file=new File([_bereitesBlob],_bereiterFilename,{type:'application/pdf'});
     if(navigator.canShare && navigator.canShare({files:[file]})){
-        navigator.share({files:[file],title:'Arbeitszeitnachweis',text:'Bitte an Gabi.willner@ekhn.de'}).then(modalSchliessen).catch(e=>{ if(e.name!=='AbortError') direktDownload(); });
+        navigator.share({files:[file],title:'Arbeitszeitnachweis',text:'Bitte an Gaby.willner@ekhn.de'}).then(modalSchliessen).catch(e=>{ if(e.name!=='AbortError') direktDownload(); });
         return;
     }
     if(navigator.share){ navigator.share({title:'Arbeitszeitnachweis',text:_bereiterFilename}).then(direktDownload).catch(direktDownload); return; }
