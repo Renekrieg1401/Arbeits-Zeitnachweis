@@ -1,4 +1,4 @@
-<!-- APP-VERSION: 2025-05-29-007 -->
+<!-- APP-VERSION: 2025-05-29-008 -->
 <!DOCTYPE html>
 <html lang="de">
 <head>
@@ -267,8 +267,9 @@
         <div style="padding:20px;">
             <!-- Hauptanzeige -->
             <div style="text-align:center;padding:16px 0 20px;">
-                <div id="gzGesamt" style="font-size:52px;font-weight:bold;color:#5c6bc0;letter-spacing:2px;line-height:1;">00:00</div>
-                <div style="font-size:13px;color:#888;margin-top:6px;">Stunden : Minuten</div>
+                <div id="gzGesamt" style="font-size:52px;font-weight:bold;color:#5c6bc0;letter-spacing:2px;line-height:1;">0.00</div>
+                <div style="font-size:13px;color:#888;margin-top:4px;">Dezimalstunden</div>
+                <div id="gzGesamtSub" style="font-size:14px;color:#aaa;margin-top:2px;"></div>
             </div>
             <!-- Detailzeilen -->
             <div id="gzDetails" style="border-top:1px solid #eee;padding-top:14px;font-size:14px;"></div>
@@ -285,7 +286,7 @@
 /* ═══════════════════════════════════════════════════════════
    AUTO-UPDATE  (Daten bleiben erhalten – localStorage wird NIE gelöscht)
 ═══════════════════════════════════════════════════════════ */
-const AKTUELLE_VERSION = '2025-05-29-007';
+const AKTUELLE_VERSION = '2025-05-29-008';
 async function pruefeAufUpdate() {
     if (!navigator.onLine || !location.protocol.startsWith('http')) return;
     try {
@@ -346,8 +347,10 @@ function zeigGesamtzeit() {
     document.getElementById('gzMonatLabel').textContent = monatName;
 
     const gh = Math.floor(gesamtMin / 60), gm = gesamtMin % 60;
-    document.getElementById('gzGesamt').textContent =
-        String(gh).padStart(2,'0') + ':' + String(gm).padStart(2,'0');
+    const dezimal = (gesamtMin / 60).toFixed(2);
+    document.getElementById('gzGesamt').textContent = dezimal;
+    document.getElementById('gzGesamtSub').textContent =
+        `= ${String(gh).padStart(2,'0')}:${String(gm).padStart(2,'0')} h`;
 
     // Wochenübersicht
     const kwKeys = Object.keys(wochenMap).sort((a,b) => Number(a)-Number(b));
@@ -361,12 +364,15 @@ function zeigGesamtzeit() {
         details.appendChild(titel);
 
         kwKeys.forEach(kw => {
-            const min = wochenMap[kw];
-            const h   = Math.floor(min / 60), m = min % 60;
-            const row = document.createElement('div');
-            row.style.cssText = 'display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid #f0f0f0;';
+            const min  = wochenMap[kw];
+            const dez  = (min / 60).toFixed(2);
+            const h    = Math.floor(min / 60), m = min % 60;
+            const row  = document.createElement('div');
+            row.style.cssText = 'display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid #f0f0f0;';
             row.innerHTML = `<span style="color:#444;">KW ${kw}</span>
-                             <span style="font-weight:bold;color:#5c6bc0;">${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')} h</span>`;
+                             <span style="font-weight:bold;color:#5c6bc0;">${dez} h
+                               <span style="font-weight:normal;font-size:12px;color:#aaa;">(${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')})</span>
+                             </span>`;
             details.appendChild(row);
         });
     }
