@@ -1,4 +1,4 @@
-<!-- APP-VERSION: 2025-05-29-008 -->
+<!-- APP-VERSION: 2026-09-13-001 -->
 <!DOCTYPE html>
 <html lang="de">
 <head>
@@ -15,7 +15,7 @@
     <style>
         :root { --header-bg-color:#f5f5f5; --accent-color:#004b7c; --weekend-color:#f0f0f0; }
         *,*::before,*::after { box-sizing:border-box; }
-        body { font-family:Arial,sans-serif; margin:0; padding:10px 10px 90px; padding-top:max(10px, env(safe-area-inset-top)); color:#333; background:#525659; -webkit-text-size-adjust:100%; min-height:100vh; }
+        body { font-family:Arial,sans-serif; margin:0; padding:10px 10px 90px; padding-top:max(10px, env(safe-area-inset-top)); color:#333; background:#131B27; -webkit-text-size-adjust:100%; min-height:100vh; }
 
         /* UPDATE-BANNER */
         /* Update-Modal: styles inline im HTML-Element */
@@ -23,20 +23,20 @@
         /* START-OVERLAY */
         #startOverlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,.75); z-index:100000; align-items:center; justify-content:center; padding:16px; }
         #startOverlay.aktiv { display:flex; }
-        #startOverlayBox { background:#fff; max-width:440px; width:100%; border-radius:16px; padding:24px 22px; box-shadow:0 8px 40px rgba(0,0,0,.4); }
-        #startOverlayBox h2 { margin:0 0 14px; font-size:19px; color:#004b7c; }
+        #startOverlayBox { background:#1B2535; color:#E0E0E0; max-width:440px; width:100%; border-radius:22px; padding:24px 22px; box-shadow:0 8px 44px rgba(0,0,0,.55); border:1px solid rgba(184,115,51,.3); }
+        #startOverlayBox h2 { margin:0 0 14px; font-size:19px; color:#E8C39E; }
         #startOverlayBox ul { margin:0 0 8px; padding-left:20px; font-size:14px; line-height:1.7; }
-        #startOverlayBox .mail { background:#eaeff5; padding:8px 12px; border-radius:8px; font-size:14px; margin:14px 0 18px; word-break:break-all; }
-        #startOverlayBox button { width:100%; padding:14px; background:#004b7c; color:#fff; border:none; border-radius:10px; font-size:16px; font-weight:bold; cursor:pointer; }
+        #startOverlayBox .mail { background:#253144; color:#FFFFFF; padding:8px 12px; border-radius:10px; font-size:14px; margin:14px 0 18px; word-break:break-all; }
+        #startOverlayBox button { width:100%; padding:14px; background:linear-gradient(135deg,#6B4423,#B87333,#E8C39E); color:#131B27; border:none; border-radius:20px; font-size:16px; font-weight:bold; cursor:pointer; }
 
         /* BUTTON-LEISTE */
-        .steuerungs-leiste-mobil { position:fixed; bottom:0; left:0; right:0; background:#f8f9fa!important; border-top:3px solid var(--accent-color)!important; padding:10px 12px; padding-bottom:max(10px, env(safe-area-inset-bottom)); display:flex!important; justify-content:center!important; z-index:9999!important; box-shadow:0 -3px 10px rgba(0,0,0,.2); }
-        .knopf-design { font-size:15px!important; font-family:Arial,sans-serif!important; font-weight:bold!important; padding:14px 32px!important; cursor:pointer!important; color:#fff!important; border:1px solid #222!important; border-radius:10px!important; text-align:center!important; -webkit-appearance:none; appearance:none; min-width:200px; }
+        .steuerungs-leiste-mobil { position:fixed; bottom:0; left:0; right:0; background:#1B2535!important; border-top:3px solid #B87333!important; padding:10px 12px; padding-bottom:max(10px, env(safe-area-inset-bottom)); display:flex!important; justify-content:center!important; z-index:9999!important; box-shadow:0 -3px 14px rgba(0,0,0,.45); }
+        .knopf-design { font-size:15px!important; font-family:Arial,sans-serif!important; font-weight:bold!important; padding:14px 32px!important; cursor:pointer!important; color:#131B27!important; border:1px solid rgba(232,195,158,.4)!important; border-radius:20px!important; text-align:center!important; -webkit-appearance:none; appearance:none; min-width:200px; }
 
         /* AUTO-SAVE STATUS */
         #saveStatus { position:fixed; top:10px; right:10px; font-size:12px; font-weight:bold; padding:5px 11px; border-radius:20px; z-index:10000; transition:opacity .4s; pointer-events:none; opacity:0; }
-        #saveStatus.saved { background:#2e7d32; color:#fff; opacity:1; }
-        #saveStatus.saving { background:#ef6c00; color:#fff; opacity:1; }
+        #saveStatus.saved { background:linear-gradient(135deg,#6B4423,#B87333,#E8C39E); color:#131B27; opacity:1; }
+        #saveStatus.saving { background:#7E3041; color:#fff; opacity:1; }
 
         /* SEITE */
         .mobil-scroll-wrapper { width:100%; overflow:visible; margin-bottom:12px; background:#fff; }
@@ -83,7 +83,7 @@
 
         @media (min-width:815px) {
             body { padding:20px; }
-            .steuerungs-leiste-mobil { position:static; width:210mm; margin:0 auto 16px; border:2px solid var(--accent-color)!important; border-radius:6px; }
+            .steuerungs-leiste-mobil { position:static; width:210mm; margin:0 auto 16px; border:2px solid #B87333!important; border-radius:16px; }
             #saveStatus { position:static; display:inline-block; margin-left:10px; vertical-align:middle; }
             .mobil-scroll-wrapper { width:210mm; margin:0 auto; border:none; }
             .page { box-shadow:0 0 10px rgba(0,0,0,.3); }
@@ -100,11 +100,11 @@
 
         #pdfModal { display:none; position:fixed; inset:0; background:rgba(0,0,0,.6); z-index:99999; align-items:flex-end; justify-content:center; }
         #pdfModal.aktiv { display:flex; }
-        #pdfModalBox { background:#fff; width:100%; max-width:500px; border-radius:18px 18px 0 0; padding:22px 20px 34px; text-align:center; box-shadow:0 -4px 24px rgba(0,0,0,.25); }
-        #pdfModalBox h3 { margin:0 0 6px; font-size:18px; color:#004b7c; }
-        #pdfModalBox p { margin:0 0 18px; font-size:13px; color:#666; }
-        #btnJetztSenden { width:100%; padding:15px; background:#004b7c; color:#fff; border:none; border-radius:12px; font-size:17px; font-weight:bold; cursor:pointer; margin-bottom:10px; }
-        #btnModalAbbrechen { width:100%; padding:11px; background:transparent; color:#888; border:none; font-size:15px; cursor:pointer; }
+        #pdfModalBox { background:#1B2535; color:#E0E0E0; width:100%; max-width:500px; border-radius:22px 22px 0 0; padding:22px 20px 34px; text-align:center; box-shadow:0 -4px 28px rgba(0,0,0,.5); }
+        #pdfModalBox h3 { margin:0 0 6px; font-size:18px; color:#E8C39E; }
+        #pdfModalBox p { margin:0 0 18px; font-size:13px; color:#E0E0E0; }
+        #btnJetztSenden { width:100%; padding:15px; background:linear-gradient(135deg,#6B4423,#B87333,#E8C39E); color:#131B27; border:none; border-radius:22px; font-size:17px; font-weight:bold; cursor:pointer; margin-bottom:10px; }
+        #btnModalAbbrechen { width:100%; padding:11px; background:transparent; color:#E0E0E0; border:none; font-size:15px; cursor:pointer; }
     </style>
 </head>
 <body>
@@ -119,7 +119,7 @@
             <li><strong>Unterschrift</strong> und <strong>Datum</strong></li>
         </ul>
         <div class="mail">📧 Versenden an: <strong>Gaby.willner@ekhn.de</strong></div>
-        <div style="background:#fff3cd;border:1px solid #ffc107;border-radius:8px;padding:10px 12px;margin:14px 0 16px;font-size:13px;color:#7d5a00;line-height:1.5;">
+        <div style="background:rgba(232,195,158,.15);border:1px solid #B87333;border-radius:10px;padding:10px 12px;margin:14px 0 16px;font-size:13px;color:#E8C39E;line-height:1.5;">
             ⚠️ <strong>Wichtig:</strong> Wenn Sie diese App vom Homescreen entfernen, werden <strong>alle eingegebenen Daten unwiderruflich gelöscht</strong> und können nicht wiederhergestellt werden.
         </div>
         <button onclick="overlaySchliessen()">Verstanden</button>
@@ -128,19 +128,19 @@
 
 <!-- UPDATE-MODAL (zentral, nicht übersehbar) -->
 <div id="updateBanner" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:99998;align-items:center;justify-content:center;padding:20px;">
-    <div style="background:#fff;max-width:380px;width:100%;border-radius:16px;overflow:hidden;box-shadow:0 8px 40px rgba(0,0,0,.4);">
-        <div style="background:#2e7d32;padding:18px 20px;">
-            <div style="font-size:22px;font-weight:bold;color:#fff;">🔄 Update verfügbar</div>
-            <div style="font-size:13px;color:#c8e6c9;margin-top:4px;">Eine neue Version ist bereit</div>
+    <div style="background:#1B2535;max-width:380px;width:100%;border-radius:22px;overflow:hidden;box-shadow:0 8px 44px rgba(0,0,0,.55);">
+        <div style="background:linear-gradient(135deg,#6B4423,#B87333,#E8C39E);padding:18px 20px;">
+            <div style="font-size:22px;font-weight:bold;color:#131B27;">🔄 Update verfügbar</div>
+            <div style="font-size:13px;color:rgba(19,27,39,.75);margin-top:4px;">Eine neue Version ist bereit</div>
         </div>
         <div style="padding:18px 20px;">
-            <p style="margin:0 0 16px;font-size:14px;color:#333;line-height:1.5;">
+            <p style="margin:0 0 16px;font-size:14px;color:#E0E0E0;line-height:1.5;">
                 Ihre eingegebenen Daten bleiben vollständig erhalten und werden <strong>nicht gelöscht</strong>.
             </p>
-            <button onclick="location.reload(true)" style="width:100%;padding:14px;background:#2e7d32;color:#fff;border:none;border-radius:10px;font-size:16px;font-weight:bold;cursor:pointer;margin-bottom:10px;">
+            <button onclick="location.reload(true)" style="width:100%;padding:14px;background:linear-gradient(135deg,#6B4423,#B87333,#E8C39E);color:#131B27;border:none;border-radius:20px;font-size:16px;font-weight:bold;cursor:pointer;margin-bottom:10px;">
                 ✅ Jetzt aktualisieren
             </button>
-            <button onclick="document.getElementById('updateBanner').style.display='none'" style="width:100%;padding:11px;background:transparent;color:#888;border:1px solid #ddd;border-radius:10px;font-size:14px;cursor:pointer;">
+            <button onclick="document.getElementById('updateBanner').style.display='none'" style="width:100%;padding:11px;background:transparent;color:#E0E0E0;border:1px solid rgba(224,224,224,.3);border-radius:20px;font-size:14px;cursor:pointer;">
                 Später
             </button>
         </div>
@@ -152,8 +152,8 @@
 <div class="steuerungs-leiste-mobil" id="kontrollZentrum">
     <!-- <button type="button" class="knopf-design" style="background:#2e7d32;" onclick="triggerManualSave()">💾 Sichern</button> -->
     <!-- <button type="button" class="knopf-design" style="background:#ef6c00;" onclick="triggerManualLoad()">🔄 Laden</button> -->
-    <button type="button" class="knopf-design" style="background:#004b7c;flex:1;" onclick="speichernAlsPDF()">📤 Als PDF senden</button>
-    <button type="button" class="knopf-design" style="background:#5c6bc0;padding:14px 16px!important;min-width:unset;" onclick="zeigGesamtzeit()" title="Gesamtarbeitszeit">⏱</button>
+    <button type="button" class="knopf-design" style="background:linear-gradient(135deg,#6B4423,#B87333,#E8C39E);flex:1;" onclick="speichernAlsPDF()">📤 Als PDF senden</button>
+    <button type="button" class="knopf-design" style="background:linear-gradient(135deg,#6B4423,#B87333,#E8C39E);padding:14px 16px!important;min-width:unset;" onclick="zeigGesamtzeit()" title="Gesamtarbeitszeit">⏱</button>
 </div>
 
 
@@ -259,22 +259,22 @@
 
 <!-- GESAMTARBEITSZEIT-OVERLAY -->
 <div id="gesamtzeitModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:99997;align-items:center;justify-content:center;padding:16px;">
-    <div style="background:#fff;max-width:400px;width:100%;border-radius:16px;overflow:hidden;box-shadow:0 8px 40px rgba(0,0,0,.4);">
-        <div style="background:#5c6bc0;padding:18px 20px 14px;">
-            <div style="font-size:20px;font-weight:bold;color:#fff;">⏱ Gesamtarbeitszeit</div>
-            <div id="gzMonatLabel" style="font-size:13px;color:#c5cae9;margin-top:3px;"></div>
+    <div style="background:#fff;max-width:400px;width:100%;border-radius:22px;overflow:hidden;box-shadow:0 8px 44px rgba(0,0,0,.5);border:1px solid rgba(184,115,51,.25);">
+        <div style="background:linear-gradient(135deg,#6B4423,#B87333,#E8C39E);padding:18px 20px 14px;">
+            <div style="font-size:20px;font-weight:bold;color:#131B27;">⏱ Gesamtarbeitszeit</div>
+            <div id="gzMonatLabel" style="font-size:13px;color:rgba(19,27,39,.75);margin-top:3px;"></div>
         </div>
         <div style="padding:20px;">
             <!-- Hauptanzeige -->
             <div style="text-align:center;padding:16px 0 20px;">
-                <div id="gzGesamt" style="font-size:52px;font-weight:bold;color:#5c6bc0;letter-spacing:2px;line-height:1;">0.00</div>
+                <div id="gzGesamt" style="font-size:52px;font-weight:bold;color:#7E3041;letter-spacing:2px;line-height:1;">0.00</div>
                 <div style="font-size:13px;color:#888;margin-top:4px;">Dezimalstunden</div>
                 <div id="gzGesamtSub" style="font-size:14px;color:#aaa;margin-top:2px;"></div>
             </div>
             <!-- Detailzeilen -->
             <div id="gzDetails" style="border-top:1px solid #eee;padding-top:14px;font-size:14px;"></div>
             <button onclick="document.getElementById('gesamtzeitModal').style.display='none'"
-                style="width:100%;margin-top:18px;padding:13px;background:#5c6bc0;color:#fff;border:none;border-radius:10px;font-size:15px;font-weight:bold;cursor:pointer;">
+                style="width:100%;margin-top:18px;padding:13px;background:linear-gradient(135deg,#6B4423,#B87333,#E8C39E);color:#131B27;border:none;border-radius:20px;font-size:15px;font-weight:bold;cursor:pointer;">
                 Schließen
             </button>
         </div>
@@ -286,7 +286,7 @@
 /* ═══════════════════════════════════════════════════════════
    AUTO-UPDATE  (Daten bleiben erhalten – localStorage wird NIE gelöscht)
 ═══════════════════════════════════════════════════════════ */
-const AKTUELLE_VERSION = '2025-05-29-008';
+const AKTUELLE_VERSION = '2026-09-13-001';
 async function pruefeAufUpdate() {
     if (!navigator.onLine || !location.protocol.startsWith('http')) return;
     try {
