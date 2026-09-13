@@ -1,4 +1,4 @@
-<!-- APP-VERSION: 2026-09-13-004 -->
+<!-- APP-VERSION: 2026-09-13-005 -->
 <!DOCTYPE html>
 <html lang="de">
 <head>
@@ -127,10 +127,10 @@
         .tages-dienst-block { margin-bottom:20px; }
         .tages-dienst-block h3 { margin:0 0 10px; font-size:14.5px; color:#FFFFFF; }
         .tages-zeit-row { display:flex; gap:14px; }
-        .tages-zeit-feld { flex:1; background:rgba(255,255,255,.05); border:1px solid rgba(124,147,184,0.16); border-radius:14px; padding:8px 12px; }
+        .tages-zeit-feld { flex:1; background:#253144; border:1px solid rgba(124,147,184,0.16); border-radius:14px; padding:8px 12px; box-shadow:inset 4px 4px 7px rgba(0,0,0,0.65), inset -3px -3px 6px rgba(232,195,158,0.55); }
         .tages-zeit-feld label { display:block; font-size:11px; color:#9fb0c9; margin-bottom:2px; }
         .tages-zeit-feld input { width:100%; border:none; background:transparent; color:#E0E0E0; font-size:18px; font-weight:bold; text-align:center; font-family:Arial,sans-serif; -webkit-appearance:none; }
-        #tagesBemerkung { width:100%; min-height:56px; border-radius:14px; border:1px solid rgba(124,147,184,0.16); background:rgba(255,255,255,.05); color:#E0E0E0; font-size:14px; padding:10px 12px; font-family:Arial,sans-serif; resize:none; box-sizing:border-box; }
+        #tagesBemerkung { width:100%; min-height:56px; border-radius:14px; border:1px solid rgba(124,147,184,0.16); background:#253144; color:#E0E0E0; font-size:14px; padding:10px 12px; font-family:Arial,sans-serif; resize:none; box-sizing:border-box; box-shadow:inset 4px 4px 7px rgba(0,0,0,0.65), inset -3px -3px 6px rgba(232,195,158,0.55); }
         #btnUebertragen { width:100%; padding:15px; margin-top:6px; background:linear-gradient(135deg,#6B4423 0%,#B87333 16%,#6B4423 34%,#E8C39E 50%,#B87333 64%,#6B4423 82%,#E8C39E 100%); color:#131B27; border:none; border-radius:20px; font-size:16px; font-weight:bold; cursor:pointer; }
         #tagesUebertragenStatus { text-align:center; font-size:13px; color:#8fd19e; margin-top:12px; min-height:16px; opacity:0; transition:opacity .4s; }
         #tagesUebertragenStatus.aktiv { opacity:1; }
@@ -384,7 +384,7 @@
 /* ═══════════════════════════════════════════════════════════
    AUTO-UPDATE  (Daten bleiben erhalten – localStorage wird NIE gelöscht)
 ═══════════════════════════════════════════════════════════ */
-const AKTUELLE_VERSION = '2026-09-13-004';
+const AKTUELLE_VERSION = '2026-09-13-005';
 async function pruefeAufUpdate() {
     if (!navigator.onLine || !location.protocol.startsWith('http')) return;
     try {
