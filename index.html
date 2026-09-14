@@ -1,4 +1,4 @@
-<!-- APP-VERSION: 2026-09-14-001 -->
+<!-- APP-VERSION: 2026-09-14-002 -->
 <!DOCTYPE html>
 <html lang="de">
 <head>
@@ -120,6 +120,39 @@
         .sidebar-monat-eintrag.aktuell { border-color:#B87333; background:linear-gradient(135deg,#6B4423 0%,#B87333 16%,#6B4423 34%,#E8C39E 50%,#B87333 64%,#6B4423 82%,#E8C39E 100%); color:#131B27; font-weight:bold; }
         .sidebar-monat-eintrag:active { opacity:.75; }
 
+        /* ═══ SIDEBAR: TABS (Monate / Einstellungen) ═══ */
+        #sidebarTabs { display:flex; gap:8px; padding:0 16px 14px; border-bottom:1px solid rgba(124,147,184,0.16); }
+        .sidebar-tab-btn { flex:1; padding:9px 6px; border-radius:12px; border:1px solid rgba(124,147,184,0.16); background:transparent; color:#9fb0c9; font-size:12.5px; font-weight:bold; cursor:pointer; font-family:Arial,sans-serif; }
+        .sidebar-tab-btn.aktiv { background:linear-gradient(135deg,#6B4423 0%,#B87333 16%,#6B4423 34%,#E8C39E 50%,#B87333 64%,#6B4423 82%,#E8C39E 100%); color:#131B27; border-color:transparent; }
+
+        /* ═══ SIDEBAR: EINSTELLUNGEN ═══ */
+        #sidebarEinstellungen { display:none; flex:1; overflow-y:auto; padding:16px; }
+        #sidebarEinstellungen.aktiv { display:block; }
+        .settings-block { margin-bottom:20px; }
+        .settings-block label { display:block; font-size:12px; color:#9fb0c9; margin-bottom:6px; font-weight:bold; }
+        .settings-feld { background:#253144; border:1px solid rgba(124,147,184,0.16); border-radius:14px; padding:10px 12px; box-shadow:inset 4px 4px 7px rgba(0,0,0,0.65), inset -3px -3px 6px rgba(232,195,158,0.35); }
+        .settings-feld input { width:100%; border:none; background:transparent; color:#E0E0E0; font-size:15px; font-family:Arial,sans-serif; -webkit-appearance:none; }
+        .settings-hinweis { font-size:11.5px; color:#7d8ba3; margin-top:6px; line-height:1.4; }
+        #btnUnterschriftOeffnen { width:100%; padding:13px; background:linear-gradient(135deg,#6B4423 0%,#B87333 16%,#6B4423 34%,#E8C39E 50%,#B87333 64%,#6B4423 82%,#E8C39E 100%); color:#131B27; border:none; border-radius:16px; font-size:14px; font-weight:bold; cursor:pointer; }
+        #settingsSigPreviewWrap { margin-top:10px; text-align:center; }
+        #settingsSigPreview { max-width:100%; max-height:60px; background:#fff; border-radius:8px; display:none; }
+        #settingsSigPreview.aktiv { display:inline-block; }
+        #settingsSigLeer { font-size:12px; color:#7d8ba3; margin-top:8px; }
+
+        /* ═══ UNTERSCHRIFT-OVERLAY (global, einmal hinterlegt) ═══ */
+        #unterschriftModal { display:none; position:fixed; inset:0; background:rgba(0,0,0,.65); z-index:99998; align-items:center; justify-content:center; padding:16px; }
+        #unterschriftModal.aktiv { display:flex; }
+        #unterschriftBox { background:rgba(37,49,68,0.95); -webkit-backdrop-filter:blur(20px); backdrop-filter:blur(20px); max-width:400px; width:100%; border-radius:22px; overflow:hidden; box-shadow:-6px -6px 12px rgba(255,255,255,0.14), 7px 7px 14px rgba(0,0,0,0.55); border:1px solid rgba(124,147,184,0.16); }
+        #unterschriftBox .us-head { background:linear-gradient(135deg,#6B4423 0%,#B87333 16%,#6B4423 34%,#E8C39E 50%,#B87333 64%,#6B4423 82%,#E8C39E 100%); padding:16px 20px 12px; font-size:18px; font-weight:bold; color:#131B27; }
+        #unterschriftBox .us-body { padding:18px 20px 20px; }
+        #unterschriftCanvasWrap { position:relative; background:#fff; border-radius:12px; overflow:hidden; touch-action:none; }
+        #unterschriftCanvas { width:100%; height:150px; display:block; touch-action:none; }
+        .us-btn-row { display:flex; gap:10px; margin-top:14px; }
+        .us-btn-row button { flex:1; padding:12px; border:none; border-radius:16px; font-size:14px; font-weight:bold; cursor:pointer; }
+        #btnUsLoeschen { background:rgba(224,224,224,0.15); color:#E0E0E0; }
+        #btnUsSpeichern { background:linear-gradient(135deg,#6B4423 0%,#B87333 16%,#6B4423 34%,#E8C39E 50%,#B87333 64%,#6B4423 82%,#E8C39E 100%); color:#131B27; }
+        #btnUsAbbrechen { width:100%; margin-top:8px; padding:10px; background:transparent; border:none; color:#9fb0c9; font-size:13px; cursor:pointer; }
+
         /* ═══ TAGESEINGABE (Startansicht) ═══ */
         #ansichtTageseingabe { max-width:480px; margin:0 auto; padding:64px 4px 100px; }
         #tagesKarte { background:rgba(37,49,68,0.85); -webkit-backdrop-filter:blur(20px); backdrop-filter:blur(20px); border-radius:22px; padding:22px 20px 26px; border:1px solid rgba(124,147,184,0.16); box-shadow:-6px -6px 12px rgba(255,255,255,0.14), 7px 7px 14px rgba(0,0,0,0.55), inset 0 4px 10px -4px rgba(255,255,255,0.16); color:#E0E0E0; }
@@ -197,10 +230,52 @@
 <div id="sidebarBackdrop" onclick="schliesseSidebar()"></div>
 <div id="sidebarPanel">
     <div id="sidebarHeader">
-        <h3>📁 Monats-Archiv</h3>
+        <h3 id="sidebarTitel">📁 Monats-Archiv</h3>
         <button type="button" id="sidebarCloseBtn" onclick="schliesseSidebar()" aria-label="Schließen">✕</button>
     </div>
+    <div id="sidebarTabs">
+        <button type="button" class="sidebar-tab-btn aktiv" id="tabBtnMonate" onclick="zeigeSidebarTab('monate')">📁 Monate</button>
+        <button type="button" class="sidebar-tab-btn" id="tabBtnEinstellungen" onclick="zeigeSidebarTab('einstellungen')">⚙️ Einstellungen</button>
+    </div>
     <div id="sidebarMonateListe"></div>
+    <div id="sidebarEinstellungen">
+        <div class="settings-block">
+            <label>Name</label>
+            <div class="settings-feld"><input type="text" id="settingsName" placeholder="Vorname Nachname" oninput="speichereEinstellungName()"></div>
+            <div class="settings-hinweis">Wird automatisch im Dokument rechts oben eingetragen.</div>
+        </div>
+        <div class="settings-block">
+            <label>Stellenanteil</label>
+            <div class="settings-feld"><input type="number" id="settingsStellenanteil" min="1" max="100" step="1" placeholder="100" oninput="speichereEinstellungStellenanteil()"> %</div>
+            <div class="settings-hinweis">Bezogen auf eine Vollzeitstelle mit 37,5 Std./Woche — wird zur Soll-Berechnung in der Gesamtzeit-Übersicht genutzt.</div>
+        </div>
+        <div class="settings-block">
+            <label>Unterschrift</label>
+            <button type="button" id="btnUnterschriftOeffnen" onclick="oeffneUnterschriftModal()">✍️ Unterschrift hinterlegen</button>
+            <div id="settingsSigPreviewWrap">
+                <img id="settingsSigPreview" alt="Hinterlegte Unterschrift">
+                <div id="settingsSigLeer">Noch keine Unterschrift hinterlegt.</div>
+            </div>
+            <div class="settings-hinweis">Wird automatisch in jedes Dokument unten rechts eingesetzt — manuelles Unterschreiben pro Monat entfällt.</div>
+        </div>
+    </div>
+</div>
+
+<!-- UNTERSCHRIFT-OVERLAY (global, einmal hinterlegt, gilt für alle Monate) -->
+<div id="unterschriftModal">
+    <div id="unterschriftBox">
+        <div class="us-head">✍️ Unterschrift hinterlegen</div>
+        <div class="us-body">
+            <div id="unterschriftCanvasWrap">
+                <canvas id="unterschriftCanvas" width="320" height="150"></canvas>
+            </div>
+            <div class="us-btn-row">
+                <button type="button" id="btnUsLoeschen" onclick="loescheUnterschriftCanvas()">Löschen</button>
+                <button type="button" id="btnUsSpeichern" onclick="speichereGlobaleUnterschrift()">Speichern</button>
+            </div>
+            <button type="button" id="btnUsAbbrechen" onclick="schliesseUnterschriftModal()">Abbrechen</button>
+        </div>
+    </div>
 </div>
 
 <!-- ANSICHT 1: TAGESEINGABE (Standardansicht beim Laden) -->
@@ -384,7 +459,7 @@
 /* ═══════════════════════════════════════════════════════════
    AUTO-UPDATE  (Daten bleiben erhalten – localStorage wird NIE gelöscht)
 ═══════════════════════════════════════════════════════════ */
-const AKTUELLE_VERSION = '2026-09-14-001';
+const AKTUELLE_VERSION = '2026-09-14-002';
 async function pruefeAufUpdate() {
     if (!navigator.onLine || !location.protocol.startsWith('http')) return;
     try {
@@ -450,6 +525,11 @@ function zeigGesamtzeit() {
     document.getElementById('gzGesamtSub').textContent =
         `= ${String(gh).padStart(2,'0')}:${String(gm).padStart(2,'0')} h`;
 
+    // Soll-Stunden aus Stellenanteil (bezogen auf 37,5-Std.-Vollzeitwoche)
+    let stellenanteil = parseInt(localStorage.getItem(storagePrefix+'stellenanteil'), 10);
+    if (isNaN(stellenanteil) || stellenanteil < 1) stellenanteil = 100;
+    const sollMinProWoche = Math.round(37.5 * 60 * stellenanteil / 100);
+
     // Wochenübersicht
     const kwKeys = Object.keys(wochenMap).sort((a,b) => Number(a)-Number(b));
     const details = document.getElementById('gzDetails');
@@ -458,21 +538,40 @@ function zeigGesamtzeit() {
     if (kwKeys.length > 0) {
         const titel = document.createElement('div');
         titel.style.cssText = 'font-weight:bold;color:#E0E0E0;margin-bottom:8px;font-size:12px;text-transform:uppercase;letter-spacing:.5px;';
-        titel.textContent = 'Aufschlüsselung nach Woche';
+        titel.textContent = `Aufschlüsselung nach Woche · Soll ${stellenanteil}% (${(sollMinProWoche/60).toFixed(2)} h/Woche)`;
         details.appendChild(titel);
 
+        let sollGesamtMin = 0;
         kwKeys.forEach(kw => {
             const min  = wochenMap[kw];
             const dez  = (min / 60).toFixed(2);
             const h    = Math.floor(min / 60), m = min % 60;
+            const diffMin = min - sollMinProWoche;
+            sollGesamtMin += sollMinProWoche;
+            const diffDez = (diffMin / 60).toFixed(2);
+            const diffFarbe = diffMin >= 0 ? '#8fd19e' : '#e08a8a';
+            const diffText = (diffMin >= 0 ? '+' : '') + diffDez + ' h';
             const row  = document.createElement('div');
             row.style.cssText = 'display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid rgba(224,224,224,0.16);';
             row.innerHTML = `<span style="color:#E0E0E0;">KW ${kw}</span>
-                             <span style="font-weight:bold;color:#E8C39E;">${dez} h
-                               <span style="font-weight:normal;font-size:12px;color:#aaa;">(${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')})</span>
+                             <span style="text-align:right;">
+                               <span style="font-weight:bold;color:#E8C39E;">${dez} h</span>
+                               <span style="font-weight:normal;font-size:12px;color:#aaa;"> (${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')})</span>
+                               <span style="font-weight:bold;font-size:12px;color:${diffFarbe};margin-left:6px;">${diffText}</span>
                              </span>`;
             details.appendChild(row);
         });
+
+        const diffGesamtMin = gesamtMin - sollGesamtMin;
+        const diffGesamtFarbe = diffGesamtMin >= 0 ? '#8fd19e' : '#e08a8a';
+        const diffGesamtText = (diffGesamtMin >= 0 ? '+' : '') + (diffGesamtMin/60).toFixed(2) + ' h';
+        const sollRow = document.createElement('div');
+        sollRow.style.cssText = 'display:flex;justify-content:space-between;align-items:center;padding:8px 0 2px;margin-top:6px;border-top:1px solid rgba(124,147,184,0.3);font-size:13px;';
+        sollRow.innerHTML = `<span style="color:#E0E0E0;font-weight:bold;">Soll gesamt (${kwKeys.length} Wo.)</span>
+                             <span style="color:#E0E0E0;">${(sollGesamtMin/60).toFixed(2)} h
+                               <span style="font-weight:bold;color:${diffGesamtFarbe};margin-left:6px;">${diffGesamtText}</span>
+                             </span>`;
+        details.appendChild(sollRow);
     }
 
     // Arbeitstage-Info
@@ -739,6 +838,7 @@ async function loadTableData(){
     if (!raw){
         const gn = localStorage.getItem(storagePrefix+'global_username');
         if (gn && !document.getElementById('nameInput').value) document.getElementById('nameInput').value = gn;
+        fuelleGlobaleUnterschriftFallsLeer();
         return false;  // ← keine Daten gefunden
     }
     let p;
@@ -748,6 +848,8 @@ async function loadTableData(){
     if (p.sigDate)  document.getElementById('sigDate').value = p.sigDate;
     if (p.signatureImg && p.signatureImg.length>100){
         const img=new Image(); img.onload=()=>{ ctx.clearRect(0,0,canvas.width,canvas.height); ctx.drawImage(img,0,0); }; img.src=p.signatureImg;
+    } else {
+        fuelleGlobaleUnterschriftFallsLeer();
     }
     if (p.cells) Object.keys(p.cells).forEach(id => { const el=document.getElementById(id); if(el){ el.value=p.cells[id]; if(el.tagName==='TEXTAREA') autoGrow(el); } });
     rekalkuliereAlleTextareas();   // zweiter Pass nach vollständigem Render
@@ -934,12 +1036,52 @@ async function uebertrageHeute(){
 ═══════════════════════════════════════════════════════════ */
 function oeffneSidebar(){
     baueMonatsListe();
+    zeigeSidebarTab('monate');
     document.getElementById('sidebarBackdrop').classList.add('aktiv');
     document.getElementById('sidebarPanel').classList.add('aktiv');
 }
 function schliesseSidebar(){
     document.getElementById('sidebarBackdrop').classList.remove('aktiv');
     document.getElementById('sidebarPanel').classList.remove('aktiv');
+}
+function zeigeSidebarTab(tab){
+    const istMonate = tab === 'monate';
+    document.getElementById('sidebarMonateListe').style.display = istMonate ? 'block' : 'none';
+    document.getElementById('sidebarEinstellungen').classList.toggle('aktiv', !istMonate);
+    document.getElementById('tabBtnMonate').classList.toggle('aktiv', istMonate);
+    document.getElementById('tabBtnEinstellungen').classList.toggle('aktiv', !istMonate);
+    document.getElementById('sidebarTitel').textContent = istMonate ? '📁 Monats-Archiv' : '⚙️ Einstellungen';
+    if (!istMonate) ladeEinstellungenUI();
+}
+
+/* ═══════════════════════════════════════════════════════════
+   EINSTELLUNGEN: Name, Stellenanteil, globale Unterschrift
+═══════════════════════════════════════════════════════════ */
+function ladeEinstellungenUI(){
+    const name = localStorage.getItem(storagePrefix+'global_username') || '';
+    document.getElementById('settingsName').value = name;
+    const stellenanteil = localStorage.getItem(storagePrefix+'stellenanteil') || '100';
+    document.getElementById('settingsStellenanteil').value = stellenanteil;
+    const sig = localStorage.getItem(storagePrefix+'globale_unterschrift');
+    const img = document.getElementById('settingsSigPreview');
+    const leer = document.getElementById('settingsSigLeer');
+    if (sig && sig.length > 100){
+        img.src = sig; img.classList.add('aktiv'); leer.style.display = 'none';
+    } else {
+        img.classList.remove('aktiv'); leer.style.display = 'block';
+    }
+}
+function speichereEinstellungName(){
+    const name = document.getElementById('settingsName').value;
+    localStorage.setItem(storagePrefix+'global_username', name);
+    const nameFeld = document.getElementById('nameInput');
+    if (nameFeld){ nameFeld.value = name; saveMetaFields(); }
+}
+function speichereEinstellungStellenanteil(){
+    let val = parseInt(document.getElementById('settingsStellenanteil').value, 10);
+    if (isNaN(val) || val < 1) val = 1;
+    if (val > 100) val = 100;
+    localStorage.setItem(storagePrefix+'stellenanteil', String(val));
 }
 function formatiereMonatLabel(jjjjMm){
     const teile = jjjjMm.split('-');
@@ -1115,6 +1257,65 @@ function clearSignature(){ ctx.clearRect(0,0,canvas.width,canvas.height); schedu
 if(canvas){
     canvas.addEventListener('mousedown',startDraw); canvas.addEventListener('mousemove',draw); window.addEventListener('mouseup',stopDraw);
     canvas.addEventListener('touchstart',startDraw,{passive:false}); canvas.addEventListener('touchmove',draw,{passive:false}); window.addEventListener('touchend',stopDraw);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   GLOBALE UNTERSCHRIFT (Einstellungen) — wird automatisch in
+   jedes Monatsdokument unten rechts eingesetzt
+═══════════════════════════════════════════════════════════ */
+const usCanvas = document.getElementById('unterschriftCanvas');
+const usCtx = usCanvas ? usCanvas.getContext('2d') : null;
+let usIsDrawing = false;
+function getPosUS(e){ const r=usCanvas.getBoundingClientRect(), sx=usCanvas.width/r.width, sy=usCanvas.height/r.height; let cx,cy; if(e.touches&&e.touches.length){cx=e.touches[0].clientX;cy=e.touches[0].clientY;}else{cx=e.clientX;cy=e.clientY;} return {x:(cx-r.left)*sx,y:(cy-r.top)*sy}; }
+function usStartDraw(e){ usIsDrawing=true; const p=getPosUS(e); usCtx.beginPath(); usCtx.moveTo(p.x,p.y); if(e.touches)e.preventDefault(); }
+function usDraw(e){ if(!usIsDrawing)return; const p=getPosUS(e); usCtx.lineTo(p.x,p.y); usCtx.stroke(); if(e.touches)e.preventDefault(); }
+function usStopDraw(){ usIsDrawing=false; }
+if (usCanvas){
+    usCtx.strokeStyle = '#131B27'; usCtx.lineWidth = 2.4; usCtx.lineCap = 'round'; usCtx.lineJoin = 'round';
+    usCanvas.addEventListener('mousedown',usStartDraw); usCanvas.addEventListener('mousemove',usDraw); window.addEventListener('mouseup',usStopDraw);
+    usCanvas.addEventListener('touchstart',usStartDraw,{passive:false}); usCanvas.addEventListener('touchmove',usDraw,{passive:false}); window.addEventListener('touchend',usStopDraw);
+}
+function oeffneUnterschriftModal(){
+    if (usCtx) usCtx.clearRect(0,0,usCanvas.width,usCanvas.height);
+    const gespeichert = localStorage.getItem(storagePrefix+'globale_unterschrift');
+    if (gespeichert && gespeichert.length > 100 && usCtx){
+        const img = new Image();
+        img.onload = () => usCtx.drawImage(img,0,0,usCanvas.width,usCanvas.height);
+        img.src = gespeichert;
+    }
+    document.getElementById('unterschriftModal').classList.add('aktiv');
+}
+function schliesseUnterschriftModal(){
+    document.getElementById('unterschriftModal').classList.remove('aktiv');
+}
+function loescheUnterschriftCanvas(){
+    if (usCtx) usCtx.clearRect(0,0,usCanvas.width,usCanvas.height);
+}
+function fuelleGlobaleUnterschriftFallsLeer(){
+    if (!canvas || !ctx) return;
+    if (!isCanvasEmpty(canvas)) return;
+    const gespeichert = localStorage.getItem(storagePrefix+'globale_unterschrift');
+    if (!gespeichert || gespeichert.length <= 100) return;
+    const img = new Image();
+    img.onload = () => { ctx.clearRect(0,0,canvas.width,canvas.height); ctx.drawImage(img,0,0,canvas.width,canvas.height); };
+    img.src = gespeichert;
+}
+function speichereGlobaleUnterschrift(){
+    if (!usCanvas) return;
+    const leer = isCanvasEmpty(usCanvas);
+    const dataUrl = leer ? '' : usCanvas.toDataURL();
+    if (leer){
+        localStorage.removeItem(storagePrefix+'globale_unterschrift');
+    } else {
+        localStorage.setItem(storagePrefix+'globale_unterschrift', dataUrl);
+        if (ctx && canvas){
+            const img = new Image();
+            img.onload = () => { ctx.clearRect(0,0,canvas.width,canvas.height); ctx.drawImage(img,0,0,canvas.width,canvas.height); scheduleAutoSave(); };
+            img.src = dataUrl;
+        }
+    }
+    ladeEinstellungenUI();
+    schliesseUnterschriftModal();
 }
 
 /* ═══════════════════════════════════════════════════════════
