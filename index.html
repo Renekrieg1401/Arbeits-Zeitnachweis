@@ -1,4 +1,4 @@
-<!-- APP-VERSION: 2026-09-13-006 -->
+<!-- APP-VERSION: 2026-09-14-001 -->
 <!DOCTYPE html>
 <html lang="de">
 <head>
@@ -212,11 +212,11 @@
             <div class="tages-zeit-row">
                 <div class="tages-zeit-feld">
                     <label>von</label>
-                    <input type="text" inputmode="numeric" id="tagesFruehVon" placeholder="--:--" oninput="cleanTime(this)" onblur="handleTagesZeitBlur(this)">
+                    <input type="text" inputmode="numeric" id="tagesFruehVon" placeholder="--:--" oninput="cleanTime(this);speichereTagesEntwurf()" onblur="handleTagesZeitBlur(this);speichereTagesEntwurf()">
                 </div>
                 <div class="tages-zeit-feld">
                     <label>bis</label>
-                    <input type="text" inputmode="numeric" id="tagesFruehBis" placeholder="--:--" oninput="cleanTime(this)" onblur="handleTagesZeitBlur(this)">
+                    <input type="text" inputmode="numeric" id="tagesFruehBis" placeholder="--:--" oninput="cleanTime(this);speichereTagesEntwurf()" onblur="handleTagesZeitBlur(this);speichereTagesEntwurf()">
                 </div>
             </div>
         </div>
@@ -225,17 +225,17 @@
             <div class="tages-zeit-row">
                 <div class="tages-zeit-feld">
                     <label>von</label>
-                    <input type="text" inputmode="numeric" id="tagesSpaetVon" placeholder="--:--" oninput="cleanTime(this)" onblur="handleTagesZeitBlur(this)">
+                    <input type="text" inputmode="numeric" id="tagesSpaetVon" placeholder="--:--" oninput="cleanTime(this);speichereTagesEntwurf()" onblur="handleTagesZeitBlur(this);speichereTagesEntwurf()">
                 </div>
                 <div class="tages-zeit-feld">
                     <label>bis</label>
-                    <input type="text" inputmode="numeric" id="tagesSpaetBis" placeholder="--:--" oninput="cleanTime(this)" onblur="handleTagesZeitBlur(this)">
+                    <input type="text" inputmode="numeric" id="tagesSpaetBis" placeholder="--:--" oninput="cleanTime(this);speichereTagesEntwurf()" onblur="handleTagesZeitBlur(this);speichereTagesEntwurf()">
                 </div>
             </div>
         </div>
         <div class="tages-dienst-block">
             <h3>📝 Bemerkungen</h3>
-            <textarea id="tagesBemerkung" rows="2" oninput="autoGrow(this)" placeholder="z.B. Krank, Urlaub, Fortbildung ..."></textarea>
+            <textarea id="tagesBemerkung" rows="2" oninput="autoGrow(this);speichereTagesEntwurf()" placeholder="z.B. Krank, Urlaub, Fortbildung ..."></textarea>
         </div>
         <button type="button" id="btnUebertragen" onclick="uebertrageHeute()">✅ Übertragen</button>
         <div id="tagesUebertragenStatus"></div>
@@ -384,7 +384,7 @@
 /* ═══════════════════════════════════════════════════════════
    AUTO-UPDATE  (Daten bleiben erhalten – localStorage wird NIE gelöscht)
 ═══════════════════════════════════════════════════════════ */
-const AKTUELLE_VERSION = '2026-09-13-006';
+const AKTUELLE_VERSION = '2026-09-14-001';
 async function pruefeAufUpdate() {
     if (!navigator.onLine || !location.protocol.startsWith('http')) return;
     try {
@@ -870,6 +870,34 @@ function zeigeUebertragenStatus(text){
     if (uebertragenFadeTimer) clearTimeout(uebertragenFadeTimer);
     uebertragenFadeTimer = setTimeout(() => { el.classList.remove('aktiv'); }, 2800);
 }
+let entwurfSaveTimer = null;
+function speichereTagesEntwurf(){
+    if (entwurfSaveTimer) clearTimeout(entwurfSaveTimer);
+    entwurfSaveTimer = setTimeout(async () => {
+        const entwurf = {
+            fruehVon: document.getElementById('tagesFruehVon').value,
+            fruehBis: document.getElementById('tagesFruehBis').value,
+            spaetVon: document.getElementById('tagesSpaetVon').value,
+            spaetBis: document.getElementById('tagesSpaetBis').value,
+            bemerkung: document.getElementById('tagesBemerkung').value,
+        };
+        const enc = await verschluesseln(JSON.stringify(entwurf));
+        localStorage.setItem(storagePrefix + 'tages_entwurf', enc);
+    }, 150);
+}
+async function ladeTagesEntwurf(){
+    const stored = localStorage.getItem(storagePrefix + 'tages_entwurf');
+    if (!stored) return;
+    try {
+        const entwurf = JSON.parse(await entschluesseln(stored));
+        document.getElementById('tagesFruehVon').value = entwurf.fruehVon || '';
+        document.getElementById('tagesFruehBis').value = entwurf.fruehBis || '';
+        document.getElementById('tagesSpaetVon').value = entwurf.spaetVon || '';
+        document.getElementById('tagesSpaetBis').value = entwurf.spaetBis || '';
+        document.getElementById('tagesBemerkung').value = entwurf.bemerkung || '';
+        autoGrow(document.getElementById('tagesBemerkung'));
+    } catch(e) { /* Entwurf nicht lesbar (z.B. anderes Gerät ohne Schlüssel) - verwerfen */ }
+}
 async function uebertrageHeute(){
     const heute = new Date();
     const jjjj = heute.getFullYear();
@@ -897,6 +925,7 @@ async function uebertrageHeute(){
     scheduleAutoSave();
 
     ['tagesFruehVon','tagesFruehBis','tagesSpaetVon','tagesSpaetBis','tagesBemerkung'].forEach(id => { document.getElementById(id).value=''; });
+    localStorage.removeItem(storagePrefix + 'tages_entwurf');
     zeigeUebertragenStatus('✓ Übertragen für ' + tag + '.' + mm + '.' + jjjj);
 }
 
@@ -1096,6 +1125,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     document.getElementById('startOverlay').classList.add('aktiv');  // Pflichthinweis bei Start
     document.getElementById('tagesDatumHeader').textContent = formatiereHeuteDatum();
     await loadMonthDataset();
+    await ladeTagesEntwurf();
 });
 </script>
 
