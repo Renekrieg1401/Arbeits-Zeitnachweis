@@ -1,4 +1,4 @@
-<!-- APP-VERSION: 2026-09-14-002 -->
+<!-- APP-VERSION: 2026-09-14-003 -->
 <!DOCTYPE html>
 <html lang="de">
 <head>
@@ -165,6 +165,7 @@
         .tages-zeit-feld input { width:100%; border:none; background:transparent; color:#E0E0E0; font-size:18px; font-weight:bold; text-align:center; font-family:Arial,sans-serif; -webkit-appearance:none; }
         #tagesBemerkung { width:100%; min-height:56px; border-radius:14px; border:1px solid rgba(124,147,184,0.16); background:#253144; color:#E0E0E0; font-size:14px; padding:10px 12px; font-family:Arial,sans-serif; resize:none; box-sizing:border-box; box-shadow:inset 4px 4px 7px rgba(0,0,0,0.65), inset -3px -3px 6px rgba(232,195,158,0.55); }
         #btnUebertragen { width:100%; padding:15px; margin-top:6px; background:linear-gradient(135deg,#6B4423 0%,#B87333 16%,#6B4423 34%,#E8C39E 50%,#B87333 64%,#6B4423 82%,#E8C39E 100%); color:#131B27; border:none; border-radius:20px; font-size:16px; font-weight:bold; cursor:pointer; }
+        #btnFreieTage { width:100%; padding:11px; margin-top:10px; background:rgba(224,224,224,0.12); border:1px solid rgba(124,147,184,0.16); color:#9fb0c9; border-radius:16px; font-size:13.5px; font-weight:bold; cursor:pointer; font-family:Arial,sans-serif; }
         #tagesUebertragenStatus { text-align:center; font-size:13px; color:#8fd19e; margin-top:12px; min-height:16px; opacity:0; transition:opacity .4s; }
         #tagesUebertragenStatus.aktiv { opacity:1; }
 
@@ -313,6 +314,7 @@
             <textarea id="tagesBemerkung" rows="2" oninput="autoGrow(this);speichereTagesEntwurf()" placeholder="z.B. Krank, Urlaub, Fortbildung ..."></textarea>
         </div>
         <button type="button" id="btnUebertragen" onclick="uebertrageHeute()">✅ Übertragen</button>
+        <button type="button" id="btnFreieTage" onclick="setzeFreieTage()">🏖️ Frei eintragen (ab morgen)</button>
         <div id="tagesUebertragenStatus"></div>
     </div>
 </div>
@@ -459,7 +461,7 @@
 /* ═══════════════════════════════════════════════════════════
    AUTO-UPDATE  (Daten bleiben erhalten – localStorage wird NIE gelöscht)
 ═══════════════════════════════════════════════════════════ */
-const AKTUELLE_VERSION = '2026-09-14-002';
+const AKTUELLE_VERSION = '2026-09-14-003';
 async function pruefeAufUpdate() {
     if (!navigator.onLine || !location.protocol.startsWith('http')) return;
     try {
@@ -1029,6 +1031,74 @@ async function uebertrageHeute(){
     ['tagesFruehVon','tagesFruehBis','tagesSpaetVon','tagesSpaetBis','tagesBemerkung'].forEach(id => { document.getElementById(id).value=''; });
     localStorage.removeItem(storagePrefix + 'tages_entwurf');
     zeigeUebertragenStatus('✓ Übertragen für ' + tag + '.' + mm + '.' + jjjj);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   FREIE TAGE (ab morgen, unabhängig vom aktuell angezeigten
+   Monat) — trägt 00:00/00:00/00:00/00:00 + "Frei" in den
+   Bemerkungen ein, monatsübergreifend
+═══════════════════════════════════════════════════════════ */
+async function setzeFreieTage(){
+    const eingabe = prompt('Für wie viele Tage ab morgen soll „Frei" eingetragen werden?', '1');
+    if (eingabe === null) return;
+    let anzahl = parseInt(eingabe, 10);
+    if (isNaN(anzahl) || anzahl < 1) { alert('Bitte eine gültige Anzahl Tage eingeben.'); return; }
+    if (anzahl > 60) anzahl = 60;
+
+    const heute = new Date();
+    const proMonat = {};
+    for (let i = 1; i <= anzahl; i++){
+        const d = new Date(heute.getFullYear(), heute.getMonth(), heute.getDate() + i);
+        const jjjjMm = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+        (proMonat[jjjjMm] = proMonat[jjjjMm] || []).push(d.getDate());
+    }
+
+    for (const jjjjMm of Object.keys(proMonat)) {
+        await schreibeFreieTageInMonat(jjjjMm, proMonat[jjjjMm]);
+    }
+
+    zeigeUebertragenStatus(`✓ „Frei" eingetragen für ${anzahl} Tag${anzahl!==1?'e':''} ab morgen`);
+}
+
+async function schreibeFreieTageInMonat(jjjjMm, tage){
+    const key = storagePrefix + 'data_' + jjjjMm;
+    let payload = null;
+    const raw = localStorage.getItem(key);
+    if (raw) {
+        try { payload = JSON.parse(await entschluesseln(raw)); } catch(e) { payload = null; }
+    }
+    if (!payload) {
+        payload = {
+            username: document.getElementById('nameInput')?.value || localStorage.getItem(storagePrefix+'global_username') || '',
+            kwInput: '', sigDate: '', signatureImg: '', cells: {}
+        };
+    }
+    if (!payload.cells) payload.cells = {};
+    tage.forEach(tag => {
+        payload.cells[`cell-${tag}-frueh-von`] = '00:00';
+        payload.cells[`cell-${tag}-frueh-bis`] = '00:00';
+        payload.cells[`cell-${tag}-spaet-von`] = '00:00';
+        payload.cells[`cell-${tag}-spaet-bis`] = '00:00';
+        payload.cells[`cell-${tag}-bemerkung`] = 'Frei';
+    });
+    payload.savedAt = new Date().toISOString();
+    const enc = await verschluesseln(JSON.stringify(payload));
+    localStorage.setItem(key, enc);
+    localStorage.setItem(storagePrefix+'last_active_month', jjjjMm);
+
+    // Falls dieser Monat gerade als Dokument sichtbar ist: DOM sofort mit aktualisieren
+    const mi = document.getElementById('monthInput');
+    const dokSichtbar = document.getElementById('ansichtDokument').style.display !== 'none';
+    if (mi && mi.value === jjjjMm && dokSichtbar) {
+        tage.forEach(tag => {
+            ['frueh-von','frueh-bis','spaet-von','spaet-bis'].forEach(feld => {
+                const el = document.getElementById(`cell-${tag}-${feld}`);
+                if (el) el.value = '00:00';
+            });
+            const bem = document.getElementById(`cell-${tag}-bemerkung`);
+            if (bem) { bem.value = 'Frei'; autoGrow(bem); }
+        });
+    }
 }
 
 /* ═══════════════════════════════════════════════════════════
