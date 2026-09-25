@@ -1857,6 +1857,26 @@ document.addEventListener("DOMContentLoaded", async () => {
 });
 </script>
 
+<script>
+// Service-Worker-Registrierung (2026-09-25) — GitHub-Pages-Projektseite laeuft
+// unter dem Unterpfad /Arbeits-Zeitnachweis/, daher absoluter Pfad statt Root.
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', function () {
+        navigator.serviceWorker.register('/Arbeits-Zeitnachweis/sw.js');
+    });
+
+    // Sobald ein neuer Service Worker die Kontrolle uebernimmt (= neue Version
+    // wurde aktiviert), Seite einmalig automatisch neu laden — kein manuelles
+    // Reload mehr noetig.
+    let swReloadAusgeloest = false;
+    navigator.serviceWorker.addEventListener('controllerchange', function () {
+        if (swReloadAusgeloest) return;
+        swReloadAusgeloest = true;
+        window.location.reload();
+    });
+}
+</script>
+
 </body>
 </html>
 </html>
