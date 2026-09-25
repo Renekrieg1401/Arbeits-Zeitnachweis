@@ -206,6 +206,8 @@
         .schicht-liste-tag.wochenende { background:#1c2635; }
         .schicht-liste-tag.heute { border-color:#B87333; border-width:2px; }
         .schicht-liste-tag.ausgewaehlt { background:rgba(232,195,158,.22); border-color:#E8C39E; box-shadow:0 0 0 2px rgba(232,195,158,.4) inset; }
+        .schicht-liste-tag.privat { background:rgba(192,57,43,.20); border-color:#c0392b; }
+        .schicht-liste-tag.privat .schicht-liste-tag-datum { color:#e08a8a; }
         .schicht-liste-tag-datum { font-size:12.5px; color:#E0E0E0; font-weight:bold; min-width:52px; flex-shrink:0; }
         .schicht-liste-tag-badges { display:flex; flex-wrap:wrap; gap:6px; flex:1; }
         .schicht-liste-tag-badges .schicht-badge { font-size:13px; padding:4px 9px; border-radius:8px; line-height:1.6; }
@@ -241,6 +243,8 @@
         #schichtTagBtnRow { display:flex; gap:10px; margin-top:22px; }
         #schichtTagBtnRow button { flex:1; padding:13px; border:none; border-radius:16px; font-size:14px; font-weight:bold; cursor:pointer; font-family:Arial,sans-serif; }
         #btnSchichtTagLoeschen { background:rgba(224,224,224,0.12); color:#e08a8a; }
+        #btnSchichtPrivat { width:100%; margin-top:14px; padding:11px; border-radius:14px; border:1px solid rgba(192,57,43,0.4); background:#253144; color:#e08a8a; font-size:13px; font-weight:bold; cursor:pointer; font-family:Arial,sans-serif; }
+        #btnSchichtPrivat.aktiv { background:#c0392b; color:#fff; border-color:transparent; }
         #btnSchichtTagUebernehmen { background:linear-gradient(135deg,#6B4423 0%,#B87333 16%,#6B4423 34%,#E8C39E 50%,#B87333 64%,#6B4423 82%,#E8C39E 100%); color:#131B27; }
         #btnSchichtTagAbbrechen { width:100%; margin-top:8px; padding:10px; background:transparent; border:none; color:#9fb0c9; font-size:13px; cursor:pointer; font-family:Arial,sans-serif; }
     </style>
@@ -378,6 +382,7 @@
         <div class="schicht-chip-grid" id="schichtTourenChips"></div>
         <div class="schicht-gruppe-titel">Andere Dienste</div>
         <div class="schicht-chip-grid" id="schichtAndereChips"></div>
+        <button type="button" id="btnSchichtPrivat" onclick="toggleSchichtPrivat()">🔴 Privates Ereignis</button>
         <div id="schichtTagBtnRow">
             <button type="button" id="btnSchichtTagLoeschen" onclick="loescheSchichtTag()">Löschen</button>
             <button type="button" id="btnSchichtTagUebernehmen" onclick="uebernehmeSchichtDienst()">Übernehmen</button>
@@ -1332,6 +1337,20 @@ function ladeSchichtplan(){ try { return JSON.parse(localStorage.getItem(schicht
 function speichereSchichtplan(plan){ localStorage.setItem(schichtStorageKey, JSON.stringify(plan)); }
 function schichtDatumKey(j,m,t){ return `${j}-${String(m+1).padStart(2,'0')}-${String(t).padStart(2,'0')}`; }
 
+const schichtPrivatStorageKey = storagePrefix + 'schichtPrivatTage';
+function ladeSchichtPrivatTage(){ try { return new Set(JSON.parse(localStorage.getItem(schichtPrivatStorageKey) || '[]')); } catch(e){ return new Set(); } }
+function speichereSchichtPrivatTage(set){ localStorage.setItem(schichtPrivatStorageKey, JSON.stringify(Array.from(set))); }
+function toggleSchichtPrivat(){
+    if (!schichtAktivesTagDatum) return;
+    const set = ladeSchichtPrivatTage();
+    const aktivNeu = !set.has(schichtAktivesTagDatum);
+    if (aktivNeu) set.add(schichtAktivesTagDatum); else set.delete(schichtAktivesTagDatum);
+    speichereSchichtPrivatTage(set);
+    document.getElementById('btnSchichtPrivat').classList.toggle('aktiv', aktivNeu);
+    const zeile = document.querySelector(`#schichtListeContainer .schicht-liste-tag[data-datum="${schichtAktivesTagDatum}"]`);
+    if (zeile) zeile.classList.toggle('privat', aktivNeu);
+}
+
 let schichtSichtbareMonate = [];        // [{jahr,monat}] aufsteigend sortiert, monat 0-basiert
 let schichtScrollObserver = null;
 let schichtMehrfachModus = false;
@@ -1422,6 +1441,7 @@ function schichtMonatAnhaengen(jahr, monat, position){
 }
 function schichtMonatListeAnhaengen(jahr, monat, position, plan){
     const heute = new Date();
+    const privatTage = ladeSchichtPrivatTage();
     const block = document.createElement('div');
     block.className = 'schicht-liste-block';
     const titel = document.createElement('div');
@@ -1437,6 +1457,7 @@ function schichtMonatListeAnhaengen(jahr, monat, position, plan){
         if (dow===0||dow===6) zeile.classList.add('wochenende');
         if (jahr===heute.getFullYear() && monat===heute.getMonth() && t===heute.getDate()) zeile.classList.add('heute');
         if (schichtAusgewaehlteTage.has(key)) zeile.classList.add('ausgewaehlt');
+        if (privatTage.has(key)) zeile.classList.add('privat');
         zeile.dataset.datum = key;
         const datumEl = document.createElement('div');
         datumEl.className = 'schicht-liste-tag-datum';
@@ -1557,15 +1578,19 @@ function oeffneSchichtTagOverlay(datumKey){
     schichtAktiveChips = new Set();
     const titel = document.getElementById('schichtTagTitel');
     const loeschBtn = document.getElementById('btnSchichtTagLoeschen');
+    const privatBtn = document.getElementById('btnSchichtPrivat');
     if (datumKey){
         const plan = ladeSchichtplan();
         (plan[datumKey]||[]).forEach(c => schichtAktiveChips.add(c));
         const [j,m,t] = datumKey.split('-').map(Number);
         titel.textContent = `${t}. ${SCHICHT_MONATSNAMEN[m-1]} ${j}`;
         loeschBtn.style.display = '';
+        privatBtn.style.display = '';
+        privatBtn.classList.toggle('aktiv', ladeSchichtPrivatTage().has(datumKey));
     } else {
         titel.textContent = `Dienst für ${schichtAusgewaehlteTage.size} Tage zuweisen`;
         loeschBtn.style.display = 'none';
+        privatBtn.style.display = 'none';
     }
     schichtRenderChips();
     document.getElementById('schichtTagModal').classList.add('aktiv');
