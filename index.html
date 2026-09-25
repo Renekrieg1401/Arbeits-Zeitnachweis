@@ -194,7 +194,20 @@
         #schichtKalToolbar { display:flex; gap:10px; padding:10px 16px; border-bottom:1px solid rgba(124,147,184,0.16); flex-shrink:0; }
         #btnSchichtMehrfach { flex:1; padding:10px; border-radius:14px; border:1px solid rgba(124,147,184,0.16); background:#253144; color:#9fb0c9; font-size:13px; font-weight:bold; cursor:pointer; font-family:Arial,sans-serif; }
         #btnSchichtMehrfach.aktiv { background:linear-gradient(135deg,#6B4423 0%,#B87333 16%,#6B4423 34%,#E8C39E 50%,#B87333 64%,#6B4423 82%,#E8C39E 100%); color:#131B27; border-color:transparent; }
+        #btnSchichtListenmodus { flex:1; padding:10px; border-radius:14px; border:1px solid rgba(124,147,184,0.16); background:#253144; color:#9fb0c9; font-size:13px; font-weight:bold; cursor:pointer; font-family:Arial,sans-serif; }
+        #btnSchichtListenmodus.aktiv { background:linear-gradient(135deg,#6B4423 0%,#B87333 16%,#6B4423 34%,#E8C39E 50%,#B87333 64%,#6B4423 82%,#E8C39E 100%); color:#131B27; border-color:transparent; }
         #schichtKalScroll { flex:1; overflow-y:auto; padding:6px 12px 110px; -webkit-overflow-scrolling:touch; }
+        #schichtListeContainer { display:none; }
+        #schichtKalScroll.listenmodus #schichtMonateContainer { display:none; }
+        #schichtKalScroll.listenmodus #schichtListeContainer { display:block; }
+        .schicht-liste-block { margin:14px 0; }
+        .schicht-liste-titel { font-size:15px; font-weight:bold; color:#E8C39E; text-align:center; margin-bottom:8px; text-transform:uppercase; letter-spacing:.5px; }
+        .schicht-liste-tag { display:flex; align-items:center; gap:10px; padding:9px 10px; border-radius:10px; background:#253144; border:1px solid rgba(124,147,184,0.16); margin-bottom:5px; cursor:pointer; }
+        .schicht-liste-tag.wochenende { background:#1c2635; }
+        .schicht-liste-tag.heute { border-color:#B87333; border-width:2px; }
+        .schicht-liste-tag.ausgewaehlt { background:rgba(232,195,158,.22); border-color:#E8C39E; box-shadow:0 0 0 2px rgba(232,195,158,.4) inset; }
+        .schicht-liste-tag-datum { font-size:12.5px; color:#E0E0E0; font-weight:bold; min-width:52px; flex-shrink:0; }
+        .schicht-liste-tag-badges { display:flex; flex-wrap:wrap; gap:4px; flex:1; }
         .schicht-monat-block { margin:18px 0 8px; }
         .schicht-monat-titel { font-size:15px; font-weight:bold; color:#E8C39E; text-align:center; margin-bottom:10px; text-transform:uppercase; letter-spacing:.5px; }
         .schicht-wochentage { display:grid; grid-template-columns:repeat(7,1fr); gap:4px; margin-bottom:4px; }
@@ -341,10 +354,12 @@
     </div>
     <div id="schichtKalToolbar">
         <button type="button" id="btnSchichtMehrfach" onclick="toggleSchichtMehrfachModus()">☑️ Mehrfachauswahl</button>
+        <button type="button" id="btnSchichtListenmodus" onclick="toggleSchichtListenmodus()">📋 Liste</button>
     </div>
     <div id="schichtKalScroll">
         <div id="schichtLadeSentinelOben">lädt frühere Monate …</div>
         <div id="schichtMonateContainer"></div>
+        <div id="schichtListeContainer"></div>
         <div id="schichtLadeSentinelUnten">lädt weitere Monate …</div>
     </div>
     <div id="schichtBulkLeiste">
@@ -1288,6 +1303,7 @@ async function waehleMonatAusSidebar(jjjjMm){
 ═══════════════════════════════════════════════════════════ */
 const SCHICHT_TOUREN = ['F01','F02','F03','F10','F20','S01','W01','W02','W11'];
 const SCHICHT_ANDERE = ['DB','Fbi','U','X','KAu'];
+const SCHICHT_TOUR_FARBEN = { F01:'hsl(0,60%,72%)', F02:'hsl(40,60%,68%)', F03:'hsl(80,50%,65%)', F10:'hsl(120,40%,68%)', F20:'hsl(160,45%,65%)', S01:'hsl(200,55%,70%)', W01:'hsl(240,50%,78%)', W02:'hsl(280,50%,78%)', W11:'hsl(320,55%,75%)' };
 const SCHICHT_MONATSNAMEN = ['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'];
 const SCHICHT_WOCHENTAGE = ['Mo','Di','Mi','Do','Fr','Sa','So'];
 const schichtStorageKey = storagePrefix + 'schichtplan';
@@ -1299,6 +1315,7 @@ function schichtDatumKey(j,m,t){ return `${j}-${String(m+1).padStart(2,'0')}-${S
 let schichtSichtbareMonate = [];        // [{jahr,monat}] aufsteigend sortiert, monat 0-basiert
 let schichtScrollObserver = null;
 let schichtMehrfachModus = false;
+let schichtListenModus = false;
 let schichtAusgewaehlteTage = new Set();  // 'YYYY-MM-DD'
 let schichtAktivesTagDatum = null;        // im Einzel-Overlay bearbeitetes Datum, null = Mehrfachauswahl
 let schichtAktiveChips = new Set();
@@ -1307,9 +1324,13 @@ function oeffneSchichtKalender(){
     schichtSichtbareMonate = [];
     schichtAusgewaehlteTage.clear();
     schichtMehrfachModus = false;
+    schichtListenModus = false;
     document.getElementById('btnSchichtMehrfach').classList.remove('aktiv');
+    document.getElementById('btnSchichtListenmodus').classList.remove('aktiv');
+    document.getElementById('schichtKalScroll').classList.remove('listenmodus');
     document.getElementById('schichtBulkLeiste').classList.remove('aktiv');
     document.getElementById('schichtMonateContainer').innerHTML = '';
+    document.getElementById('schichtListeContainer').innerHTML = '';
     const heute = new Date();
     for (let off = -1; off <= 2; off++){
         const d = new Date(heute.getFullYear(), heute.getMonth()+off, 1);
@@ -1360,13 +1381,57 @@ function schichtBaueBadges(container, key, plan){
     container.innerHTML = '';
     (plan[key]||[]).forEach(code => {
         const b = document.createElement('span');
-        b.className = 'schicht-badge' + (SCHICHT_TOUREN.includes(code) ? '' : ' andere');
+        const istTour = SCHICHT_TOUREN.includes(code);
+        b.className = 'schicht-badge' + (istTour ? '' : ' andere');
+        if (istTour) b.style.background = SCHICHT_TOUR_FARBEN[code];
         b.textContent = code;
         container.appendChild(b);
     });
 }
+function toggleSchichtListenmodus(){
+    schichtListenModus = !schichtListenModus;
+    document.getElementById('btnSchichtListenmodus').classList.toggle('aktiv', schichtListenModus);
+    document.getElementById('schichtKalScroll').classList.toggle('listenmodus', schichtListenModus);
+}
 function schichtMonatAnhaengen(jahr, monat, position){
     const plan = ladeSchichtplan();
+    schichtMonatGridAnhaengen(jahr, monat, position, plan);
+    schichtMonatListeAnhaengen(jahr, monat, position, plan);
+}
+function schichtMonatListeAnhaengen(jahr, monat, position, plan){
+    const heute = new Date();
+    const block = document.createElement('div');
+    block.className = 'schicht-liste-block';
+    const titel = document.createElement('div');
+    titel.className = 'schicht-liste-titel';
+    titel.textContent = `${SCHICHT_MONATSNAMEN[monat]} ${jahr}`;
+    block.appendChild(titel);
+    const tageImMonat = new Date(jahr, monat+1, 0).getDate();
+    for (let t=1; t<=tageImMonat; t++){
+        const key = schichtDatumKey(jahr, monat, t);
+        const dow = new Date(jahr, monat, t).getDay();
+        const zeile = document.createElement('div');
+        zeile.className = 'schicht-liste-tag';
+        if (dow===0||dow===6) zeile.classList.add('wochenende');
+        if (jahr===heute.getFullYear() && monat===heute.getMonth() && t===heute.getDate()) zeile.classList.add('heute');
+        if (schichtAusgewaehlteTage.has(key)) zeile.classList.add('ausgewaehlt');
+        zeile.dataset.datum = key;
+        const datumEl = document.createElement('div');
+        datumEl.className = 'schicht-liste-tag-datum';
+        datumEl.textContent = `${SCHICHT_WOCHENTAGE[dow===0?6:dow-1]} ${String(t).padStart(2,'0')}.`;
+        zeile.appendChild(datumEl);
+        const badges = document.createElement('div');
+        badges.className = 'schicht-liste-tag-badges';
+        schichtBaueBadges(badges, key, plan);
+        zeile.appendChild(badges);
+        zeile.onclick = () => schichtTagKlick(key);
+        block.appendChild(zeile);
+    }
+    const container = document.getElementById('schichtListeContainer');
+    if (position === 'oben') container.insertBefore(block, container.firstChild);
+    else container.appendChild(block);
+}
+function schichtMonatGridAnhaengen(jahr, monat, position, plan){
     const heute = new Date();
     const block = document.createElement('div');
     block.className = 'schicht-monat-block';
@@ -1420,7 +1485,7 @@ function schichtTagKlick(datumKey){
     }
 }
 function schichtAktualisiereZellenMarkierung(){
-    document.querySelectorAll('#schichtMonateContainer .schicht-tag[data-datum]').forEach(z => {
+    document.querySelectorAll('#schichtMonateContainer .schicht-tag[data-datum], #schichtListeContainer .schicht-liste-tag[data-datum]').forEach(z => {
         z.classList.toggle('ausgewaehlt', schichtAusgewaehlteTage.has(z.dataset.datum));
     });
 }
@@ -1445,15 +1510,25 @@ function schichtRenderChips(){
     const tourenEl = document.getElementById('schichtTourenChips');
     const andereEl = document.getElementById('schichtAndereChips');
     tourenEl.innerHTML = ''; andereEl.innerHTML = '';
-    const baueChip = (code) => {
+    const baueChip = (code, istTour) => {
         const c = document.createElement('button');
-        c.type = 'button'; c.className = 'schicht-chip' + (schichtAktiveChips.has(code) ? ' aktiv' : '');
+        c.type = 'button'; c.className = 'schicht-chip';
         c.textContent = code;
-        c.onclick = () => { schichtAktiveChips.has(code) ? schichtAktiveChips.delete(code) : schichtAktiveChips.add(code); c.classList.toggle('aktiv'); };
+        const setzeZustand = () => {
+            const aktiv = schichtAktiveChips.has(code);
+            c.classList.toggle('aktiv', aktiv);
+            if (istTour){
+                c.style.background = aktiv ? SCHICHT_TOUR_FARBEN[code] : '';
+                c.style.color = aktiv ? '#131B27' : '';
+                c.style.borderColor = aktiv ? 'transparent' : '';
+            }
+        };
+        setzeZustand();
+        c.onclick = () => { schichtAktiveChips.has(code) ? schichtAktiveChips.delete(code) : schichtAktiveChips.add(code); setzeZustand(); };
         return c;
     };
-    SCHICHT_TOUREN.forEach(code => tourenEl.appendChild(baueChip(code)));
-    SCHICHT_ANDERE.forEach(code => andereEl.appendChild(baueChip(code)));
+    SCHICHT_TOUREN.forEach(code => tourenEl.appendChild(baueChip(code, true)));
+    SCHICHT_ANDERE.forEach(code => andereEl.appendChild(baueChip(code, false)));
 }
 function oeffneSchichtTagOverlay(datumKey){
     schichtAktivesTagDatum = datumKey;   // null = Mehrfachauswahl (Bulk)
@@ -1478,8 +1553,9 @@ function schichtAktualisiereBadgesFuerTage(tage){
     const plan = ladeSchichtplan();
     tage.forEach(key => {
         const zelle = document.querySelector(`#schichtMonateContainer .schicht-tag[data-datum="${key}"]`);
-        if (!zelle) return;
-        schichtBaueBadges(zelle.querySelector('.schicht-tag-badges'), key, plan);
+        if (zelle) schichtBaueBadges(zelle.querySelector('.schicht-tag-badges'), key, plan);
+        const zeile = document.querySelector(`#schichtListeContainer .schicht-liste-tag[data-datum="${key}"]`);
+        if (zeile) schichtBaueBadges(zeile.querySelector('.schicht-liste-tag-badges'), key, plan);
     });
 }
 function uebernehmeSchichtDienst(){
