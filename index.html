@@ -1382,12 +1382,27 @@ function oeffneSchichtKalender(){
     requestAnimationFrame(schichtScrolleZuHeute);
     persistUiState({schichtModal:true, schichtListe:false});
 }
-function schichtScrolleZuHeute(){
-    requestAnimationFrame(() => {
-        const selector = schichtListenModus ? '#schichtListeContainer .schicht-liste-tag.heute' : '#schichtMonateContainer .schicht-tag.heute';
-        const ziel = document.querySelector(selector);
-        if (ziel) ziel.scrollIntoView({ block: 'center' });
-    });
+function schichtScrolleZuHeute(versuch){
+    versuch = versuch || 0;
+    const selector = schichtListenModus ? '#schichtListeContainer .schicht-liste-tag.heute' : '#schichtMonateContainer .schicht-tag.heute';
+    const ziel = document.querySelector(selector);
+    if (ziel) {
+        ziel.scrollIntoView({ block: 'center' });
+        if (versuch < 3) {
+            setTimeout(() => {
+                const rect = ziel.getBoundingClientRect();
+                const scroller = document.getElementById('schichtKalScroll');
+                const scrollerRect = scroller.getBoundingClientRect();
+                if (rect.top < scrollerRect.top || rect.bottom > scrollerRect.bottom) {
+                    ziel.scrollIntoView({ block: 'center' });
+                }
+            }, 150);
+        }
+        return;
+    }
+    if (versuch < 10) {
+        setTimeout(() => schichtScrolleZuHeute(versuch + 1), 50);
+    }
 }
 function schliesseSchichtKalender(){ document.getElementById('schichtKalenderModal').classList.remove('aktiv'); persistUiState({schichtModal:false}); }
 function oeffneTourenListe(){
