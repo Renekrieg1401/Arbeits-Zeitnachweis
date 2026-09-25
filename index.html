@@ -1040,17 +1040,33 @@ async function loadMonthDataset(){
 function overlaySchliessen(){ document.getElementById('startOverlay').classList.remove('aktiv'); }
 
 /* ═══════════════════════════════════════════════════════════
+   UI-ZUSTAND: aktuelle Ansicht/Tab/Modal ueberlebt App-Wechsel
+   (iOS reisst Standalone-WebViews bei Hintergrund/Vordergrund neu auf)
+═══════════════════════════════════════════════════════════ */
+const uiStateKey = storagePrefix + 'ui_state';
+function persistUiState(patch){
+    let st = {}; try { st = JSON.parse(localStorage.getItem(uiStateKey) || '{}'); } catch(e){}
+    Object.assign(st, patch);
+    localStorage.setItem(uiStateKey, JSON.stringify(st));
+}
+function ladeUiState(){
+    try { return JSON.parse(localStorage.getItem(uiStateKey) || '{}'); } catch(e){ return {}; }
+}
+
+/* ═══════════════════════════════════════════════════════════
    ANSICHTS-UMSCHALTUNG (Tageseingabe ↔ Monats-Dokument)
 ═══════════════════════════════════════════════════════════ */
 function zeigeTageseingabe(){
     document.getElementById('ansichtDokument').style.display = 'none';
     document.getElementById('ansichtTageseingabe').style.display = 'block';
+    persistUiState({ansicht:'tages'});
 }
 function zeigeDokumentAnsicht(){
     document.getElementById('ansichtTageseingabe').style.display = 'none';
     document.getElementById('ansichtDokument').style.display = 'block';
     _letzteBreite = 0;
     requestAnimationFrame(() => { skaliereFuerSmartphone(); rekalkuliereAlleTextareas(); });
+    persistUiState({ansicht:'dokument'});
 }
 
 /* ═══════════════════════════════════════════════════════════
@@ -1215,10 +1231,12 @@ function oeffneSidebar(){
     zeigeSidebarTab('monate');
     document.getElementById('sidebarBackdrop').classList.add('aktiv');
     document.getElementById('sidebarPanel').classList.add('aktiv');
+    persistUiState({sidebar:true});
 }
 function schliesseSidebar(){
     document.getElementById('sidebarBackdrop').classList.remove('aktiv');
     document.getElementById('sidebarPanel').classList.remove('aktiv');
+    persistUiState({sidebar:false});
 }
 function zeigeSidebarTab(tab){
     document.getElementById('sidebarMonateListe').style.display = tab==='monate' ? 'block' : 'none';
@@ -1230,6 +1248,7 @@ function zeigeSidebarTab(tab){
     const titel = { monate:'📁 Monats-Archiv', schicht:'🗓 Schichtplanung', einstellungen:'⚙️ Einstellungen' };
     document.getElementById('sidebarTitel').textContent = titel[tab];
     if (tab==='einstellungen') ladeEinstellungenUI();
+    persistUiState({sidebarTab:tab});
 }
 
 /* ═══════════════════════════════════════════════════════════
@@ -1339,8 +1358,9 @@ function oeffneSchichtKalender(){
     }
     document.getElementById('schichtKalenderModal').classList.add('aktiv');
     initSchichtScrollBeobachtung();
+    persistUiState({schichtModal:true, schichtListe:false});
 }
-function schliesseSchichtKalender(){ document.getElementById('schichtKalenderModal').classList.remove('aktiv'); }
+function schliesseSchichtKalender(){ document.getElementById('schichtKalenderModal').classList.remove('aktiv'); persistUiState({schichtModal:false}); }
 
 function initSchichtScrollBeobachtung(){
     const scroller = document.getElementById('schichtKalScroll');
@@ -1392,6 +1412,7 @@ function toggleSchichtListenmodus(){
     schichtListenModus = !schichtListenModus;
     document.getElementById('btnSchichtListenmodus').classList.toggle('aktiv', schichtListenModus);
     document.getElementById('schichtKalScroll').classList.toggle('listenmodus', schichtListenModus);
+    persistUiState({schichtListe:schichtListenModus});
 }
 function schichtMonatAnhaengen(jahr, monat, position){
     const plan = ladeSchichtplan();
@@ -1783,10 +1804,16 @@ function speichereGlobaleUnterschrift(){
 ═══════════════════════════════════════════════════════════ */
 document.addEventListener("DOMContentLoaded", async () => {
     initCanvas();
-    document.getElementById('startOverlay').classList.add('aktiv');  // Pflichthinweis bei Start
+    const uiState = ladeUiState();
+    if (Object.keys(uiState).length === 0){
+        document.getElementById('startOverlay').classList.add('aktiv');  // Pflichthinweis nur beim allerersten Start
+    }
     document.getElementById('tagesDatumHeader').textContent = formatiereHeuteDatum();
     await loadMonthDataset();
     await ladeTagesEntwurf();
+    if (uiState.ansicht === 'tages') zeigeTageseingabe();
+    if (uiState.sidebar) { oeffneSidebar(); zeigeSidebarTab(uiState.sidebarTab || 'monate'); }
+    if (uiState.schichtModal) { oeffneSchichtKalender(); if (uiState.schichtListe) toggleSchichtListenmodus(); }
 });
 </script>
 
