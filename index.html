@@ -185,6 +185,7 @@
         #sidebarSchicht { display:none; flex:1; overflow-y:auto; padding:10px 10px 20px; }
         .sidebar-schicht-hinweis { font-size:12px; color:#9fb0c9; line-height:1.5; margin-bottom:14px; }
         #btnSchichtKalenderOeffnen { width:100%; padding:13px; background:linear-gradient(135deg,#6B4423 0%,#B87333 16%,#6B4423 34%,#E8C39E 50%,#B87333 64%,#6B4423 82%,#E8C39E 100%); color:#131B27; border:none; border-radius:16px; font-size:14px; font-weight:bold; cursor:pointer; }
+        #btnTourenListe { width:100%; padding:13px; margin-bottom:16px; background:linear-gradient(135deg,#6B4423 0%,#B87333 16%,#6B4423 34%,#E8C39E 50%,#B87333 64%,#6B4423 82%,#E8C39E 100%); color:#131B27; border:none; border-radius:16px; font-size:14px; font-weight:bold; cursor:pointer; }
 
         #schichtKalenderModal { display:none; position:fixed; inset:0; background:rgba(15,21,31,0.97); z-index:99996; flex-direction:column; }
         #schichtKalenderModal.aktiv { display:flex; }
@@ -320,7 +321,7 @@
         <div class="settings-block">
             <label>Stellenanteil</label>
             <div class="settings-feld"><input type="number" id="settingsStellenanteil" min="1" max="100" step="1" placeholder="100" oninput="speichereEinstellungStellenanteil()"> %</div>
-            <div class="settings-hinweis">Bezogen auf eine Vollzeitstelle mit 37,5 Std./Woche — wird zur Soll-Berechnung in der Gesamtzeit-Übersicht genutzt.</div>
+            <div class="settings-hinweis">Bezogen auf eine Vollzeitstelle mit 39 Std./Woche — wird zur Soll-Berechnung in der Gesamtzeit-Übersicht genutzt.</div>
         </div>
         <div class="settings-block">
             <label>Unterschrift</label>
@@ -395,6 +396,7 @@
 <div id="ansichtTageseingabe">
     <div id="tagesKarte">
         <div id="tagesDatumHeader"></div>
+        <button type="button" id="btnTourenListe" onclick="oeffneTourenListe()">🗓 Tourenliste öffnen</button>
         <div class="tages-dienst-block">
             <h3>🌅 Frühdienst</h3>
             <div class="tages-zeit-row">
@@ -639,10 +641,10 @@ function zeigGesamtzeit() {
     document.getElementById('gzGesamtSub').textContent =
         `= ${String(gh).padStart(2,'0')}:${String(gm).padStart(2,'0')} h`;
 
-    // Soll-Stunden aus Stellenanteil (bezogen auf 37,5-Std.-Vollzeitwoche)
+    // Soll-Stunden aus Stellenanteil (bezogen auf 39-Std.-Vollzeitwoche)
     let stellenanteil = parseInt(localStorage.getItem(storagePrefix+'stellenanteil'), 10);
     if (isNaN(stellenanteil) || stellenanteil < 1) stellenanteil = 100;
-    const sollMinProWoche = Math.round(37.5 * 60 * stellenanteil / 100);
+    const sollMinProWoche = Math.round(39 * 60 * stellenanteil / 100);
 
     // Wochenübersicht
     const kwKeys = Object.keys(wochenMap).sort((a,b) => Number(a)-Number(b));
@@ -1382,11 +1384,17 @@ function oeffneSchichtKalender(){
     persistUiState({schichtModal:true, schichtListe:false});
 }
 function schichtScrolleZuHeute(){
-    const selector = schichtListenModus ? '#schichtListeContainer .schicht-liste-tag.heute' : '#schichtMonateContainer .schicht-tag.heute';
-    const ziel = document.querySelector(selector);
-    if (ziel) ziel.scrollIntoView({ block: 'center' });
+    requestAnimationFrame(() => {
+        const selector = schichtListenModus ? '#schichtListeContainer .schicht-liste-tag.heute' : '#schichtMonateContainer .schicht-tag.heute';
+        const ziel = document.querySelector(selector);
+        if (ziel) ziel.scrollIntoView({ block: 'center' });
+    });
 }
 function schliesseSchichtKalender(){ document.getElementById('schichtKalenderModal').classList.remove('aktiv'); persistUiState({schichtModal:false}); }
+function oeffneTourenListe(){
+    oeffneSchichtKalender();
+    if (!schichtListenModus) toggleSchichtListenmodus();
+}
 
 function initSchichtScrollBeobachtung(){
     const scroller = document.getElementById('schichtKalScroll');
