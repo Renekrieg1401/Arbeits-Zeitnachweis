@@ -657,13 +657,11 @@ function zeigGesamtzeit() {
         titel.textContent = `Aufschlüsselung nach Woche · Soll ${stellenanteil}% (${(sollMinProWoche/60).toFixed(2)} h/Woche)`;
         details.appendChild(titel);
 
-        let sollGesamtMin = 0;
         kwKeys.forEach(kw => {
             const min  = wochenMap[kw];
             const dez  = (min / 60).toFixed(2);
             const h    = Math.floor(min / 60), m = min % 60;
             const diffMin = min - sollMinProWoche;
-            sollGesamtMin += sollMinProWoche;
             const diffDez = (diffMin / 60).toFixed(2);
             const diffFarbe = diffMin >= 0 ? '#8fd19e' : '#e08a8a';
             const diffText = (diffMin >= 0 ? '+' : '') + diffDez + ' h';
@@ -678,12 +676,13 @@ function zeigGesamtzeit() {
             details.appendChild(row);
         });
 
+        const sollGesamtMin = Math.round(sollMinProWoche * 52 / 12);
         const diffGesamtMin = gesamtMin - sollGesamtMin;
         const diffGesamtFarbe = diffGesamtMin >= 0 ? '#8fd19e' : '#e08a8a';
         const diffGesamtText = (diffGesamtMin >= 0 ? '+' : '') + (diffGesamtMin/60).toFixed(2) + ' h';
         const sollRow = document.createElement('div');
         sollRow.style.cssText = 'display:flex;justify-content:space-between;align-items:center;padding:8px 0 2px;margin-top:6px;border-top:1px solid rgba(124,147,184,0.3);font-size:13px;';
-        sollRow.innerHTML = `<span style="color:#E0E0E0;font-weight:bold;">Soll gesamt (${kwKeys.length} Wo.)</span>
+        sollRow.innerHTML = `<span style="color:#E0E0E0;font-weight:bold;">Soll gesamt (Monat)</span>
                              <span style="color:#E0E0E0;">${(sollGesamtMin/60).toFixed(2)} h
                                <span style="font-weight:bold;color:${diffGesamtFarbe};margin-left:6px;">${diffGesamtText}</span>
                              </span>`;
