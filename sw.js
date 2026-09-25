@@ -3,7 +3,7 @@
 // immer frisch aus dem Netz laden, Cache nur als Offline-Fallback. Verhindert, dass
 // iOS/WebKit im Standalone-Modus (Home-Bildschirm-Icon) hartnaeckig eine veraltete
 // Version einfriert.
-const CACHE_NAME = 'arbeitszeitnachweis-v1';
+const CACHE_NAME = 'arbeitszeitnachweis-v2';
 const APP_SHELL = [
   './',
   './index.html',
