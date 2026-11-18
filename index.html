@@ -833,6 +833,33 @@ function bemerkungKeydown(e, ta){
         autoGrow(ta); scheduleAutoSave();
     }
 }
+// html2canvas 1.4.1 rendert Textarea-Inhalte einzeilig (Zeilenumbrueche werden zu
+// Leerzeichen zusammengefasst) -- bestaetigter Bug, kein reines Darstellungsproblem.
+// Fix: Textareas fuer die Dauer der Erfassung durch exakt gestylte <div>s mit
+// white-space:pre-wrap ersetzen, danach unveraendert wiederherstellen. Die
+// gespeicherten Werte (ta.value/localStorage) werden dabei nie angefasst.
+function ersetzeTextareasFuerExport(container){
+    const paare = [];
+    container.querySelectorAll('textarea').forEach(ta => {
+        const cs = getComputedStyle(ta);
+        const div = document.createElement('div');
+        ['font','color','backgroundColor','textAlign','padding','border','borderRadius',
+         'boxSizing','lineHeight','boxShadow','margin'].forEach(p => { div.style[p] = cs[p]; });
+        div.style.width = ta.offsetWidth + 'px';
+        div.style.minHeight = ta.offsetHeight + 'px';
+        div.style.whiteSpace = 'pre-wrap';
+        div.style.wordBreak = 'break-word';
+        div.style.display = 'block';
+        div.textContent = ta.value;
+        ta.insertAdjacentElement('afterend', div);
+        ta.style.display = 'none';
+        paare.push({ ta, div });
+    });
+    return paare;
+}
+function stelleTextareasWieder(paare){
+    paare.forEach(({ ta, div }) => { div.remove(); ta.style.display = ''; });
+}
 function autoExpandNote(ta){
     const map={k:'Krank',u:'Urlaub',f:'Fortbildung',db:'Dienstbesprechung',p:'Pause'};
     const t=ta.value.trim().toLowerCase();
@@ -1687,7 +1714,10 @@ function speichernAlsPDF(){
     // Textarea-Höhen im Kompakt-Modus neu berechnen (kleinere Schrift/Zeilenhöhe)
     document.querySelectorAll('#tableBody textarea').forEach(ta => autoGrow(ta));
 
+    let _textareaErsatz = [];
     const aufraeumen = () => {
+        stelleTextareasWieder(_textareaErsatz);
+        _textareaErsatz = [];
         page.classList.remove('pdf-modus');
         page.style.zoom = prevZoom;
         // Höhen für normale Bildschirmansicht zurückrechnen
@@ -1710,6 +1740,7 @@ function speichernAlsPDF(){
 
         if(leiste) leiste.style.setProperty('display','none','important');
         if(status) status.style.display = 'none';
+        _textareaErsatz = ersetzeTextareasFuerExport(page);
 
         html2canvas(page, { scale:2, useCORS:true, allowTaint:true }).then(co => {
             aufraeumen();
